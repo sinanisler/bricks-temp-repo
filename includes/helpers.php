@@ -723,14 +723,12 @@ class Helpers {
 		}
 
 		$templates = [];
-
-		$areas = [ 'content', 'header', 'footer' ];
+		$areas     = [ 'content', 'header', 'footer' ];
 
 		foreach ( $areas as $area ) {
 			$elements = Database::get_data( Database::$active_templates[ $area ], $area );
 
 			if ( ! empty( $elements ) && is_array( $elements ) ) {
-
 				foreach ( $elements as $element ) {
 					if ( $element['id'] == $element_id ) {
 						$output = [
@@ -755,7 +753,6 @@ class Helpers {
 
 		// Not found yet?
 		if ( empty( $output['element'] ) ) {
-
 			// If we are still here, try to run through the found templates first, and remaining templates later
 			$all_templates_query = Templates::get_templates_query( [ 'fields' => 'ids' ] );
 			$all_templates       = ! empty( $all_templates_query->found_posts ) ? $all_templates_query->posts : [];
@@ -1303,6 +1300,44 @@ class Helpers {
 	}
 
 	/**
+	 * Code element settings: code, + executeCode
+	 * Query Loop settings: useQueryEditor + queryEditor
+	 */
+	public static function sanitize_element_php_code( $post_id, $element_id, $code ) {
+		// Return empty code: Code execution disabled globally
+		$execution_allowed = apply_filters( 'bricks/code/allow_execution', ! Database::get_setting( 'executeCodeDisabled', false ) );
+
+		if ( ! $execution_allowed ) {
+			return '';
+		}
+
+		// Return code: Current user has full access && execute_code capability
+		if ( Capabilities::$full_access && Capabilities::$execute_code ) {
+			return $code;
+		}
+
+		// Clear code to populate with setting value from database
+		$code = '';
+
+		// STEP: Get element settings from postmeta (content > header > footer)
+		$element_data = self::get_element_data( $post_id, $element_id );
+		$element      = $element_data['element'] ?? false;
+
+		// STEP: Get code element setting value from database
+		if ( isset( $element['settings']['code'] ) ) {
+			$code = $element['settings']['code'];
+		}
+
+		// STEP: Get query editor setting value from database
+		elseif ( isset( $element['settings']['query']['queryEditor'] ) ) {
+			$code = $element['settings']['query']['queryEditor'];
+		}
+
+		// Return: Code value from database
+		return $code;
+	}
+
+	/**
 	 * Sanitize Bricks data
 	 *
 	 * @since 1.3.7
@@ -1521,8 +1556,8 @@ class Helpers {
 		}
 
 		foreach ( $new_elements as $index => $element ) {
-			// STEP: Check for code elements if user doesn't have permission and execution is allowed
-			if ( $element['name'] === 'code' && ! $user_can_execute_code && ! empty( $element['settings']['executeCode'] ) ) {
+			// STEP: Code element: User doesn't have permission and code execution is enabled on element
+			if ( ! $user_can_execute_code && $element['name'] === 'code' && ! empty( $element['settings']['executeCode'] ) ) {
 				// Replace new element with old element (if it exists)
 				if ( isset( $old_elements_indexed[ $element['id'] ] ) ) {
 					$new_elements[ $index ] = $old_elements_indexed[ $element['id'] ];
@@ -1531,6 +1566,19 @@ class Helpers {
 				// Disable execution mode
 				else {
 					unset( $new_elements[ $index ]['settings']['executeCode'] );
+				}
+			}
+
+			// STEP: 'query' setting: User doesn't have permission and 'useQueryEditor' is enabled on element, plus 'queryEditor' (PHP code) exists
+			if ( ! $user_can_execute_code && isset( $element['settings']['query']['useQueryEditor'] ) && ! empty( $element['settings']['query']['queryEditor'] ) ) {
+				// Replace new element with old element (if it exists)
+				if ( isset( $old_elements_indexed[ $element['id'] ] ) ) {
+					$new_elements[ $index ] = $old_elements_indexed[ $element['id'] ];
+				}
+
+				// Disable execution mode
+				else {
+					unset( $new_elements[ $index ]['settings']['query']['useQueryEditor'] );
 				}
 			}
 
@@ -2188,7 +2236,7 @@ class Helpers {
 	}
 
 	/**
-	 * Check if Query Filters (= Bricks setting) are enabled
+	 * Check if Query Filters are enabled (in Bricks settings)
 	 *
 	 * @since 1.9.6
 	 */

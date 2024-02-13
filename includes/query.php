@@ -338,20 +338,37 @@ class Query {
 		 * @since 1.9.1
 		 */
 		if ( isset( $query_vars['useQueryEditor'] ) && ! empty( $query_vars['queryEditor'] ) && in_array( $object_type, [ 'post','term','user' ] ) ) {
-			$post_id                      = Database::$page_data['preview_or_post_id'];
-			$php_query_raw                = bricks_render_dynamic_data( $query_vars['queryEditor'], $post_id );
+			// Return: Code execution not allowed
+			$execution_allowed = apply_filters( 'bricks/code/allow_execution', ! Database::get_setting( 'executeCodeDisabled', false ) );
+
+			if ( ! $execution_allowed ) {
+				return [];
+			}
+
+			$post_id = Database::$page_data['preview_or_post_id'];
+
+			// Sanitize element code (queryEditor)
+			$php_query_raw                = $query_vars['queryEditor'];
+			$php_query_raw                = Helpers::sanitize_element_php_code( $post_id, $element_id, $php_query_raw );
+			$php_query_raw                = $php_query_raw ? bricks_render_dynamic_data( $php_query_raw, $post_id ) : '';
 			$query_vars['posts_per_page'] = get_option( 'posts_per_page' );
 
 			// Define an anonymous function that simulates the scope for user code
 			$execute_user_code = function () use ( $php_query_raw ) {
-				$user_result = null; // Initialize a variable to capture the result of user code
+				// Initialize a variable to capture the result of user code
+				$user_result = null;
 
 				// Capture user code output using output buffering
 				ob_start();
-				$user_result = eval( $php_query_raw ); // Execute the user code
-				ob_get_clean(); // Get the captured output
 
-				return $user_result; // Return the user code result
+				// Execute the user code
+				$user_result = eval( $php_query_raw );
+
+				// Get the captured output
+				ob_get_clean();
+
+				// Return the user code result
+				return $user_result;
 			};
 
 			ob_start();

@@ -116,10 +116,6 @@ class Element_Code extends Element {
 			$code = $dynamic_data_code;
 		}
 
-		if ( empty( $code ) ) {
-			return $this->render_element_placeholder( [ 'title' => esc_html__( 'No code found.', 'bricks' ) ] );
-		}
-
 		// STEP: Execute code
 		if ( ! empty( $settings['executeCode'] ) ) {
 			$execution_allowed = apply_filters( 'bricks/code/allow_execution', ! Database::get_setting( 'executeCodeDisabled', false ) );
@@ -152,6 +148,13 @@ class Element_Code extends Element {
 						);
 					}
 				}
+			}
+
+			// Sanitize element code
+			$code = Helpers::sanitize_element_php_code( $this->post_id, $this->id, $code );
+
+			if ( empty( $code ) ) {
+				return $this->render_element_placeholder( [ 'title' => esc_html__( 'No code found.', 'bricks' ) ] );
 			}
 
 			// Sets context on AJAX/REST API calls or when reloading the builder

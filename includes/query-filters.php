@@ -277,6 +277,7 @@ class Query_Filters {
 
 		// Update element table
 		$updated_data = $this->update_element_table( $filter_elements, $object_id );
+
 		// Now we need to update the index table by using the updated_data
 		$this->update_index_table( $updated_data );
 	}
@@ -349,13 +350,13 @@ class Query_Filters {
 	}
 
 	/**
-	 * Clear all index records.
-	 * Retrieve all indexable elements from element table
-	 * Index based on the element settings
+	 * Clear all filter index records
+	 * Retrieve all indexable elements from element table.
+	 * Index based on the element settings.
 	 */
 	public function reindex() {
 		if ( ! self::check_managed_db_access() ) {
-			return false;
+			return [ 'error' => 'Access denied (current user can\'t manage_options)' ];
 		}
 
 		global $wpdb;
@@ -364,7 +365,7 @@ class Query_Filters {
 
 		// Exit if table does not exist
 		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table_name ) ) !== $table_name ) {
-			return false;
+			return [ 'error' => "Table {$table_name} does not exist" ];
 		}
 
 		// STEP: Clear all index records

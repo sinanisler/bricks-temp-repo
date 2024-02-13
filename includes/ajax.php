@@ -104,8 +104,8 @@ class Ajax {
 	public static function verify_request() {
 		self::verify_nonce();
 
-		// Verfiy user access (NOTE: get_the_ID() returns 0 in AJAX call)
-		$post_id = ! empty( $_POST['postId'] ) ? $_POST['postId'] : get_the_ID();
+		// Verify user access (get_the_ID() returns 0 in AJAX call)
+		$post_id = $_POST['postId'] ?? get_the_ID();
 
 		if ( ! Capabilities::current_user_can_use_builder( $post_id ) ) {
 			wp_send_json_error( 'verify_request: User can not use builder (' . get_current_user_id() . ')' );
@@ -275,31 +275,38 @@ class Ajax {
 	}
 
 	/**
-	 * Builder: Render element HTML (pre-render & AJAX/REST API)
+	 * Render element HTML from settings
+	 *
+	 * builder.php (query_content_type_for_elements_html to generate HTML for builder load)
+	 * AJAX call / REST API call: In-builder (getHTML for PHP-rendered elements)
 	 *
 	 * @since 1.0
 	 */
-	public static function render_element( $element ) {
-		// Check: AJAX, REST API or builder
-		$is_ajax      = false;
-		$loop_element = false;
+	public static function render_element( $data ) {
+		$is_ajax = bricks_is_ajax_call();
 
-		// AJAX
-		if ( bricks_is_ajax_call() && isset( $_POST ) ) {
-			self::verify_request();
-
-			$element = isset( $_POST['element'] ) ? $_POST['element'] : $_POST;
-			$element = stripslashes_deep( $element );
-
-			$loop_element = ! empty( $_POST['loopElement'] ) ? $_POST['loopElement'] : false;
-
-			$is_ajax = true;
+		if ( $is_ajax && isset( $_POST ) ) {
+			$data = $_POST;
 		}
 
-		// REST API (Permissions checked in the API->render_element_permissions_check())
+		$loop_element = $data['loopElement'] ?? false;
+		$element      = $data['element'] ?? false;
+		$element_name = $element['name'] ?? false;
+
+		// AJAX call
+		if ( $is_ajax ) {
+			// Check: Current user can use builder
+			self::verify_request();
+
+			$element = stripslashes_deep( $element );
+		}
+
+		// REST API call (Permissions already checked in the API->render_element_permissions_check())
 		elseif ( bricks_is_rest_call() ) {
-			$loop_element = ! empty( $element['loopElement'] ) ? $element['loopElement'] : false;
-			$element      = $element['element'];
+		}
+
+		// builder.php (query_content_type_for_elements_html)
+		else {
 		}
 
 		/**
@@ -319,7 +326,6 @@ class Ajax {
 		}
 
 		// Init element class (i.e. new Bricks\Element_Alert( $element ))
-		$element_name       = ! empty( $element['name'] ) ? $element['name'] : '';
 		$element_class_name = isset( Elements::$elements[ $element_name ]['class'] ) ? Elements::$elements[ $element_name ]['class'] : false;
 
 		if ( class_exists( $element_class_name ) ) {
@@ -585,7 +591,7 @@ class Ajax {
 		$elements = self::decode( $_POST['elements'], false );
 
 		$elements = array_map( 'Bricks\Helpers::set_is_frontend_to_false', $elements );
-		$area     = ! empty( $_POST['area'] ) ? $_POST['area'] : 'content';
+		$area     = $_POST['area'] ?? 'content';
 
 		// Set Theme Styles (for correct preview of query loop nodes)
 		Theme_Styles::load_set_styles( $_POST['postId'] ?? '' );
@@ -615,14 +621,14 @@ class Ajax {
 		$loop_name = "loop_{$post_id}";
 
 		// Use loop element ID as loop_name if possible
-		if ( is_array( $elements ) && isset( $elements[0] ) && isset( $elements[0]['id'] ) ) {
+		if ( isset( $elements[0]['id'] ) ) {
 			$loop_name = "loop_{$elements[0]['id']}";
 		}
 
 		// Generate Assets before Frontend render to add 'data-query-loop-index' attribute successfully in builder
 		Assets::generate_css_from_elements( $elements, $loop_name );
 
-		$inline_css = ! empty( Assets::$inline_css[ $loop_name ] ) ? Assets::$inline_css[ $loop_name ] : '';
+		$inline_css = Assets::$inline_css[ $loop_name ] ?? '';
 
 		$html = Frontend::render_data( $elements, $area );
 

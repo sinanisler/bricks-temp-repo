@@ -74,7 +74,7 @@ class Admin {
 		add_filter( 'cron_schedules', [ $this, 'monthly_cron_schedule' ] );
 
 		// Reindex query filters records (@since 1.9.6)
-		add_action( 'wp_ajax_bricks_reindex_filters', [ $this, 'query_filters_reindex' ] );
+		add_action( 'wp_ajax_bricks_reindex_query_filters', [ $this, 'reindex_query_filters' ] );
 	}
 
 	/**
@@ -1697,16 +1697,26 @@ class Admin {
 	 *
 	 * @since 1.9.6
 	 */
-	public function query_filters_reindex() {
+	public function reindex_query_filters() {
 		Ajax::verify_nonce();
 
 		// Reindex query filters
 		$result = Query_Filters::get_instance()->reindex();
 
-		if ( $result ) {
-			wp_send_json_success( [ 'message' => esc_html__( 'Query filters reindexed successfully.', 'bricks' ) ] );
+		if ( $result && empty( $result['error'] ) ) {
+			wp_send_json_success(
+				[
+					'message' => esc_html__( 'Query filters reindexed successfully.', 'bricks' ),
+					'result'  => $result,
+				],
+			);
 		} else {
-			wp_send_json_error( [ 'message' => esc_html__( 'Something went wrong.', 'bricks' ) ] );
+			wp_send_json_error(
+				[
+					'message' => esc_html__( 'Something went wrong.', 'bricks' ),
+					'result'  => $result,
+				]
+			);
 		}
 	}
 }

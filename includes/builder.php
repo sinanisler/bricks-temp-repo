@@ -2220,7 +2220,7 @@ class Builder {
 				}
 			}
 
-			$elements_html[ $element['id'] ] = Ajax::render_element( $element );
+			$elements_html[ $element['id'] ] = Ajax::render_element( ['element' => $element] );
 		}
 
 		return $elements_html;

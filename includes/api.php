@@ -132,7 +132,7 @@ class Api {
 		/**
 		 * Query loop: Query result
 		 *
-		 * For filtering, sorting, live search, etc.
+		 * For load more, AJAX pagination, sort, filter, live search.
 		 *
 		 * @since 1.9.6
 		 */
@@ -153,10 +153,14 @@ class Api {
 	 * @since 1.5
 	 */
 	public static function render_element( $request ) {
-		$data = $request->get_json_params();
+		$data             = $request->get_json_params();
+		$post_id          = $data['postId'] ?? false;
+		$element          = $data['element'] ?? [];
+		$element_name     = $element['name'] ?? '';
+		$element_settings = $element['settings'] ?? '';
 
-		if ( ! empty( $data['postId'] ) ) {
-			Database::set_page_data( $data['postId'] );
+		if ( $post_id ) {
+			Database::set_page_data( $post_id );
 		}
 
 		// Include WooCommerce frontend classes and hooks to enable the WooCommerce element preview inside the builder (since 1.5)
@@ -173,13 +177,11 @@ class Api {
 		$response = [ 'html' => $html ];
 
 		// Template element (send template elements to run template element scripts on the canvas)
-		if ( ! empty( $data['element']['name'] ) && $data['element']['name'] === 'template' ) {
-			$template_id = isset( $data['element']['settings']['template'] ) ? $data['element']['settings']['template'] : false;
-
+		if ( $element_name === 'template' ) {
+			$template_id = $element_settings['template'] ?? false;
 			if ( $template_id ) {
 				$additional_data = Element_Template::get_builder_call_additional_data( $template_id );
-
-				$response = array_merge( $response, $additional_data );
+				$response        = array_merge( $response, $additional_data );
 			}
 		}
 
@@ -198,10 +200,9 @@ class Api {
 			return new \WP_Error( 'bricks_api_missing', __( 'Missing parameters' ), [ 'status' => 400 ] );
 		}
 
-		$result = wp_verify_nonce( $data['nonce'], 'bricks-nonce' );
-
-		if ( ! $result ) {
-			return new \WP_Error( 'rest_cookie_invalid_nonce', __( 'Cookie check failed' ), [ 'status' => 403 ] );
+		// Return: Current user can not access builder
+		if ( Capabilities::current_user_has_no_access() ) {
+			return new \WP_Error( 'rest_current_user_can_not_use_builder', __( 'Permission error' ), [ 'status' => 403 ] );
 		}
 
 		return true;
@@ -474,7 +475,10 @@ class Api {
 		$query_element_id = $request_data['queryElementId'];
 		$post_id          = $request_data['postId'];
 		$page             = $request_data['page'];
-		$query_vars       = json_decode( $request_data['queryVars'], true ); // @since 1.5.1
+		$query_vars       = json_decode( $request_data['queryVars'], true );
+
+		// Set post_id for use in prepare_query_vars_from_settings
+		Database::$page_data['preview_or_post_id'] = $post_id;
 
 		$data = Helpers::get_element_data( $post_id, $query_element_id );
 
@@ -902,7 +906,7 @@ class Api {
 	/**
 	 * Similar like render_query_page() but for AJAX query result
 	 *
-	 * Meant for Live search and all other native Filter calls.
+	 * For load more, AJAX pagination, infinite scroll, sort, filter, live search.
 	 *
 	 * @since 1.9.6
 	 */
@@ -916,6 +920,9 @@ class Api {
 		$page_filters     = $request_data['pageFilters'] ?? [];
 		$base_url         = $request_data['baseUrl'] ?? '';
 		$page             = isset( $query_vars['paged'] ) ? sanitize_text_field( $query_vars['paged'] ) : 1;
+
+		// Set post_id for use in prepare_query_vars_from_settings
+		Database::$page_data['preview_or_post_id'] = $post_id;
 
 		$data = Helpers::get_element_data( $post_id, $query_element_id );
 
