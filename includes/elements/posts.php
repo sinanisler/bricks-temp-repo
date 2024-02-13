@@ -655,9 +655,11 @@ class Element_Posts extends Element {
 		 *
 		 * If so, do not render wrappers.
 		 *
+		 * 'query_result' API call is also considered a load more/infinite scroll request.
+		 *
 		 * @since 1.8.1
 		 */
-		$is_load_more_request = Api::is_current_endpoint( 'load_query_page' );
+		$is_load_more_request = Api::is_current_endpoint( 'load_query_page' ) || Api::is_current_endpoint( 'query_result' );
 
 		// Skip rendering wrappers if this is a load more request
 		if ( ! $is_load_more_request ) {

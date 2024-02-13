@@ -102,6 +102,22 @@ class Elements {
 			'post-toc',
 		];
 
+		// Load filter element base class (@since 1.9.6)
+		if ( Helpers::enabled_query_filters() ) {
+			require_once BRICKS_PATH . 'includes/elements/filter-base.php';
+			$input_elements = [
+				'filter-checkbox',
+				'filter-datepicker',
+				'filter-radio',
+				'filter-range',
+				'filter-search',
+				'filter-select',
+				'filter-submit',
+			];
+
+			$element_names = array_merge( $element_names, $input_elements );
+		}
+
 		$element_names = apply_filters( 'bricks/builder/elements', $element_names );
 
 		foreach ( $element_names as $element_name ) {

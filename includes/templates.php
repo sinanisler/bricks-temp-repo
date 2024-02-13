@@ -186,10 +186,6 @@ class Templates {
 
 		// STEP: Builder (append template CSS as inline <style> to element HTML)
 		if ( bricks_is_builder() || bricks_is_builder_call() ) {
-			// Set post_id (@since 1.8)
-			// NOTE: No longer in use @since 1.8.2 (wrong DD feature image in builder)
-			// Assets::$post_id = Query::is_any_looping() ? Query::get_loop_object_id() : $original_post_id;
-
 			// Use 'data-template-id' to get template ID in builder to generate global classes CSS of Template element (@since 1.8.2)
 			$template_inline_css .= Assets::$inline_css_dynamic_data;
 			$html                .= "<style data-template-id=\"{$template_id}\" id=\"bricks-inline-css-template-{$template_id}\">{$template_inline_css}</style>";

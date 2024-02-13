@@ -108,8 +108,13 @@ class Capabilities {
 			self::$no_access = true;
 		}
 
-		// Default: Full access for (super) administrator
-		elseif ( is_super_admin() || current_user_can( 'manage_options' ) ) {
+		/**
+		 * Default: Full access for (super) administrator
+		 *
+		 * NOTE: Super admin check requires is_multisite() check.
+		 * Because user on single site with 'delete_users' capability is also considered super admin.
+		 */
+		elseif ( ( is_multisite() && is_super_admin( $user->ID ?? 0 ) ) || current_user_can( 'manage_options' ) ) {
 			self::$full_access = true;
 		} else {
 			self::$no_access = true;

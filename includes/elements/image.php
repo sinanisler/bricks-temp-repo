@@ -450,7 +450,7 @@ class Element_Image extends Element {
 				'mask-boom'                       => 'Boom',
 				'mask-box'                        => 'Box',
 				'mask-bubbles'                    => 'Bubbles',
-				'mask-cirlce-dots'                => 'Cirlce dots',
+				'mask-cirlce-dots'                => 'Circle dots',
 				'mask-circle-line'                => 'Circle line',
 				'mask-circle-waves'               => 'Circle waves',
 				'mask-circle'                     => 'Circle',

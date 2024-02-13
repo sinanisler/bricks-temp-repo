@@ -1848,7 +1848,7 @@ abstract class Element {
 			return;
 		}
 
-		// Attribute with value already exists, but is not an array: Convert to array first and add new value (@since 1.7.1)
+		// Attribute with value already exists, but is not an array: Convert to array first and add new value
 		if ( isset( $this->attributes[ $key ][ $attribute ] ) && ! is_array( $this->attributes[ $key ][ $attribute ] ) ) {
 			$this->attributes[ $key ][ $attribute ] = [
 				$this->attributes[ $key ][ $attribute ],
@@ -3460,12 +3460,18 @@ abstract class Element {
 
 		$page = isset( $query->query_vars['paged'] ) ? $query->query_vars['paged'] : 1;
 
-		if ( $page == 1 && $query->max_num_pages == 1 ) {
-			return;
-		}
+		// This will cause no results got no queryLoopInstances generated in frontend (@since 1.9.6)
+		// if ( $page == 1 && $query->max_num_pages == 1 ) {
+		// return;
+		// }
 
 		// Query trail class (load more or infinite scroll)
 		$this->set_attribute( $node_key, 'class', 'brx-query-trail' );
+
+		// Is Live Search: So JavaScript will hide it's results container if input value is empty
+		if ( isset( $settings['query']['is_live_search'] ) ) {
+			$this->set_attribute( $node_key, 'data-brx-live-search', true );
+		}
 
 		// Infinite scroll class
 		if ( isset( $settings['query']['infinite_scroll'] ) ) {

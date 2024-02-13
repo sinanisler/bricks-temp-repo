@@ -342,6 +342,11 @@ class Setup {
 		// Contains common JS libraries & Bricks-specific frontend.js init scripts
 		wp_enqueue_script( 'bricks-scripts', BRICKS_URL_ASSETS . 'js/bricks.min.js', [], filemtime( BRICKS_PATH_ASSETS . 'js/bricks.min.js' ), true );
 
+		// Enqueue query filters JS (@since 1.9.6)
+		if ( Helpers::enabled_query_filters() ) {
+			wp_enqueue_script( 'bricks-filters', BRICKS_URL_ASSETS . 'js/filters.min.js', [ 'bricks-scripts' ], filemtime( BRICKS_PATH_ASSETS . 'js/filters.min.js' ), true );
+		}
+
 		// Element Form (setting: enableRecaptcha)
 		$recaptcha_api_key  = Database::$global_settings['apiKeyGoogleRecaptcha'] ?? false;
 		$recaptcha_language = Database::$global_settings['recaptchaLanguage'] ?? false;
@@ -1126,6 +1131,9 @@ class Setup {
 			$control_options['taxonomies'] = bricks_is_builder() ? self::get_taxonomies_options() : [];
 
 			$control_options['userRoles'] = bricks_is_builder() ? wp_roles()->get_names() : [];
+
+			// 'allSectionTemplates' is used in query control (@since 1.9.6)
+			$control_options['allSectionTemplates'] = bricks_is_builder() ? Templates::get_templates_list( [ 'section' ], get_the_ID() ) : [];
 		} else {
 			$control_options = self::$control_options;
 		}

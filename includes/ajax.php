@@ -52,6 +52,10 @@ class Ajax {
 
 		// Get custom shape divider SVG from URL (@since 1.8.6)
 		add_action( 'wp_ajax_bricks_get_custom_shape_divider', [ $this, 'get_custom_shape_divider' ] );
+
+		// From nonce regeneration (@since 1.9.6)
+		add_action( 'wp_ajax_bricks_regenerate_nonce', [ $this, 'regenerate_nonce' ] );
+		add_action( 'wp_ajax_nopriv_bricks_regenerate_nonce', [ $this, 'regenerate_nonce' ] );
 	}
 
 	/**
@@ -65,6 +69,16 @@ class Ajax {
 		$data = $run_wp_slash ? wp_slash( $data ) : $data; // Make sure we keep the good slashes on update_post_meta
 
 		return $data;
+	}
+
+	/**
+	 * Form elmeent: Regenerate nonce
+	 *
+	 * @since 1.9.6
+	 */
+	public function regenerate_nonce() {
+		echo wp_create_nonce( 'bricks-form-nonce' );
+		wp_die();
 	}
 
 	/**

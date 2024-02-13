@@ -128,6 +128,23 @@ class Api {
 				'permission_callback' => [ $this, 'render_popup_content_permissions_check' ],
 			]
 		);
+
+		/**
+		 * Query loop: Query result
+		 *
+		 * For filtering, sorting, live search, etc.
+		 *
+		 * @since 1.9.6
+		 */
+		register_rest_route(
+			self::API_NAMESPACE,
+			'query_result',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ $this, 'render_query_result' ],
+				'permission_callback' => [ $this, 'render_query_result_permissions_check' ],
+			]
+		);
 	}
 
 	/**
@@ -870,6 +887,210 @@ class Api {
 		$data = $request->get_json_params();
 
 		if ( empty( $data['popupId'] ) || empty( $data['nonce'] ) ) {
+			return new \WP_Error( 'bricks_api_missing', __( 'Missing parameters' ), [ 'status' => 400 ] );
+		}
+
+		$result = wp_verify_nonce( $data['nonce'], 'bricks-nonce' );
+
+		if ( $result === false ) {
+			return new \WP_Error( 'rest_cookie_invalid_nonce', __( 'Bricks cookie check failed' ), [ 'status' => 403 ] );
+		}
+
+		return true;
+	}
+
+	/**
+	 * Similar like render_query_page() but for AJAX query result
+	 *
+	 * Meant for Live search and all other native Filter calls.
+	 *
+	 * @since 1.9.6
+	 */
+	public function render_query_result( $request ) {
+		$request_data = $request->get_json_params();
+
+		$query_element_id = $request_data['queryElementId'];
+		$post_id          = $request_data['postId'];
+		$filters          = $request_data['filters'] ?? [];
+		$query_vars       = $request_data['queryArgs'] ?? [];
+		$page_filters     = $request_data['pageFilters'] ?? [];
+		$base_url         = $request_data['baseUrl'] ?? '';
+		$page             = isset( $query_vars['paged'] ) ? sanitize_text_field( $query_vars['paged'] ) : 1;
+
+		$data = Helpers::get_element_data( $post_id, $query_element_id );
+
+		if ( empty( $data['elements'] ) ) {
+			return rest_ensure_response(
+				[
+					'html'   => '',
+					'styles' => '',
+					'error'  => 'Template data not found',
+				]
+			);
+		}
+
+		// STEP: Build the flat list index
+		$indexed_elements = [];
+
+		foreach ( $data['elements'] as $element ) {
+			$indexed_elements[ $element['id'] ] = $element;
+		}
+
+		if ( ! array_key_exists( $query_element_id, $indexed_elements ) ) {
+			return rest_ensure_response(
+				[
+					'html'   => '',
+					'styles' => '',
+					'error'  => 'Element not found',
+				]
+			);
+		}
+
+		// STEP: Set the query element pagination
+		$query_element = $indexed_elements[ $query_element_id ];
+
+		// TODO: Check if the query_vars are valid, sanitize and validate
+
+		// Check if the $query_element objectType is 'post' or '' (empty)
+		// Beta only support post query
+		$query_object_type = isset( $query_element['settings']['query']['objectType'] ) ? sanitize_text_field( $query_element['settings']['query']['objectType'] ) : 'post';
+
+		if ( ! in_array( $query_object_type, [ 'post' ] ) ) {
+			return rest_ensure_response(
+				[
+					'html'   => '',
+					'styles' => '',
+					'error'  => 'Query object type not supported',
+				]
+			);
+		}
+
+		// STEP: set page filters
+		Query_Filters::$page_filters = $page_filters;
+
+		// STEP: set paged query var if exists
+		$query_element['settings']['query']['paged'] = $page;
+
+		// STEP: Merge the query vars via filter, so we can override WooCommerce query vars, queryEditor query vars, etc.
+		add_filter(
+			"bricks/{$query_object_type}s/query_vars",
+			function( $vars, $settings, $element_id ) use ( $query_vars, $query_element_id, &$query_vars_before_merge ) {
+				if ( $element_id !== $query_element_id ) {
+					return $vars;
+				}
+
+				// STEP: save the query vars before merge
+				Query_Filters::$query_vars_before_merge[ $query_element_id ] = $vars;
+
+				// STEP: merge the query vars
+				return Query::merge_query_vars( $vars, $query_vars );
+			},
+			11,
+			3
+		);
+
+		// Remove the parent
+		if ( ! empty( $query_element['parent'] ) ) {
+			$query_element['parent']       = 0;
+			$query_element['_noRootClass'] = 1;
+		}
+
+		// STEP: Get the query loop elements (main and children)
+		$loop_elements = [ $query_element ];
+
+		$children = $query_element['children'];
+
+		while ( ! empty( $children ) ) {
+			$child_id = array_shift( $children );
+
+			if ( array_key_exists( $child_id, $indexed_elements ) ) {
+				$loop_elements[] = $indexed_elements[ $child_id ];
+
+				if ( ! empty( $indexed_elements[ $child_id ]['children'] ) ) {
+					$children = array_merge( $children, $indexed_elements[ $child_id ]['children'] );
+				}
+			}
+		}
+
+		// Set Theme Styles (for correct preview of query loop nodes)
+		Theme_Styles::load_set_styles( $post_id );
+
+		// STEP: Generate the styles again to catch dynamic data changes (eg. background-image)
+		$query_identifier = "ajax_query_{$query_element_id}";
+
+		Assets::generate_css_from_elements( $loop_elements, $query_identifier );
+
+		$inline_css = ! empty( Assets::$inline_css[ $query_identifier ] ) ? Assets::$inline_css[ $query_identifier ] : '';
+
+		// STEP: Render the element after styles are generated as data-query-loop-index might be inserted through hook in Assets class
+		$html = Frontend::render_data( $loop_elements );
+
+		// Add popup HTML plus styles
+		$popups = Popups::$looping_popup_html;
+
+		// STEP: Add dynamic data styles after render_data() to catch dynamic data changes (eg. background-image)
+		$inline_css .= Assets::$inline_css_dynamic_data;
+
+		$styles = ! empty( $inline_css ) ? "\n<style>/* AJAX QUERY RESULT CSS */\n{$inline_css}</style>\n" : '';
+
+		// STEP: Latest pagination HTML
+		$pagination_element = [
+			'name'     => 'pagination',
+			'settings' => [
+				'queryId' => $query_element_id,
+				'ajax'    => true,
+			],
+		];
+
+		if ( ! empty( $base_url ) ) {
+			add_filter(
+				'bricks/paginate_links_args',
+				function( $args ) use ( $base_url, $page ) {
+					$args['base']    = $base_url . '%_%';
+					$args['current'] = $page;
+					return $args;
+				}
+			);
+		}
+
+		$pagination_html = Frontend::render_element( $pagination_element );
+
+		// STEP: Query data
+		$query_data = Query::get_query_by_element_id( $query_element_id );
+
+		// Remove settings, query_result, loop_index, loop_object, is_looping properties
+		unset( $query_data->settings );
+		unset( $query_data->query_result );
+		unset( $query_data->loop_index );
+		unset( $query_data->loop_object );
+		unset( $query_data->is_looping );
+
+		$updated_filters = Query_Filters::get_updated_filters( $filters, $post_id, $query_data );
+
+		return rest_ensure_response(
+			[
+				'html'            => $html,
+				'styles'          => $styles,
+				'popups'          => $popups,
+				'pagination'      => $pagination_html,
+				'updated_filters' => $updated_filters,
+				'updated_query'   => $query_data,
+				// 'page_filters'    => Query_Filters::$page_filters,
+				// 'filter_object_ids' => Query_Filters::$filter_object_ids,
+				// 'active_filters'  => Query_Filters::$active_filters,
+			]
+		);
+	}
+
+	/**
+	 * Query loop: Query result permissions callback
+	 *
+	 * @since 1.9.6
+	 */
+	public function render_query_result_permissions_check( $request ) {
+		$data = $request->get_json_params();
+
+		if ( empty( $data['queryElementId'] ) || empty( $data['nonce'] ) ) {
 			return new \WP_Error( 'bricks_api_missing', __( 'Missing parameters' ), [ 'status' => 400 ] );
 		}
 

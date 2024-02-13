@@ -552,9 +552,16 @@ class Provider_Woo extends Base {
 			$order_key = apply_filters( 'woocommerce_thankyou_order_key', empty( $_GET['key'] ) ? '' : wc_clean( wp_unslash( $_GET['key'] ) ) );
 		}
 
+		// View order (my-account) (@since 1.9.6)
+		elseif ( ! empty( get_query_var( 'view-order' ) ) ) {
+			$order_id = absint( get_query_var( 'view-order' ) );
+		}
+
 		if ( $order_id > 0 ) {
 			$order = wc_get_order( $order_id );
-			if ( ! $order || ! hash_equals( $order->get_order_key(), $order_key ) ) {
+
+			// 'view-order' endpoint already checks the order key, so we don't need to check it again (@since 1.9.6)
+			if ( ! is_wc_endpoint_url( 'view-order' ) && ( ! $order || ! hash_equals( $order->get_order_key(), $order_key ) ) ) {
 				$order = false;
 			}
 		}

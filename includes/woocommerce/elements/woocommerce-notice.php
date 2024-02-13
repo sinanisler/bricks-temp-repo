@@ -56,16 +56,17 @@ class Woocommerce_Notice extends Element {
 			'description' => esc_html__( 'Only applied in builder and template preview.', 'bricks' ),
 		];
 
+		// WooCommerce 8.5.1+ notice banner CSS selectors (@since 1.9.6)
 		$sections = [
 			'layout' => [
-				'success' => '.woocommerce-message',
-				'notice'  => '.woocommerce-info',
-				'error'   => '.woocommerce-error',
+				'success' => '.wc-block-components-notice-banner.is-success',
+				'notice'  => '.wc-block-components-notice-banner.is-info',
+				'error'   => '.wc-block-components-notice-banner.is-error',
 			],
 			'link'   => [
-				'success' => '.woocommerce-message a, .woocommerce-message a.button',
-				'notice'  => '.woocommerce-info a, .woocommerce-info a.button',
-				'error'   => '.woocommerce-error a, .woocommerce-error a.button',
+				'success' => '.wc-block-components-notice-banner.is-success a, .wc-block-components-notice-banner.is-success a.button.wc-block-components-button, .wc-block-components-notice-banner.is-success a.button.wc-forward',
+				'notice'  => '.wc-block-components-notice-banner.is-info a, .wc-block-components-notice-banner.is-info a.button.wc-block-components-button, .wc-block-components-notice-banner.is-info a.button.wc-forward',
+				'error'   => '.wc-block-components-notice-banner.is-error a, .wc-block-components-notice-banner.is-error a.button.wc-block-components-button, wc-block-components-notice-banner.is-error a.button.wc-forward',
 			],
 		];
 
@@ -216,10 +217,11 @@ class Woocommerce_Notice extends Element {
 			],
 
 			'error'   => [
-				[
-					'text' => 'This is an error notice. <a href="#" class="button wc-forward wp-element-button">View cart</a>',
-					'data' => [],
-				],
+				// Not neede since WooCommerce 8.5.0
+				// [
+				// 'text' => 'This is an error notice. <a href="#" class="button wc-forward wp-element-button">View cart</a>',
+				// 'data' => [],
+				// ],
 				[
 					'text' => '<strong>Billing Postcode / ZIP</strong> is a required field.',
 					'data' => [ 'id' => 'billing_postcode' ],

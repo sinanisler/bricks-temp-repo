@@ -28,6 +28,8 @@ class Woocommerce {
 
 		add_action( 'wp', [ $this, 'maybe_set_template_preview_content' ], 9 );
 
+		add_action( 'wp_head', [ $this, 'dequeue_wc_blocks_css' ] );
+
 		// Disable default bricks title for WooCommerce pages if template is active (@since 1.8)
 		add_filter( 'bricks/default_page_title', [ $this, 'default_page_title' ], 10, 2 );
 
@@ -150,6 +152,17 @@ class Woocommerce {
 		add_filter( 'bricks/builder/dynamic_wrapper', [ $this, 'builder_dynamic_wrapper' ] );
 
 		add_action( 'template_redirect', [ $this, 'template_redirect' ] );
+	}
+
+	/**
+	 * Dequeue WooCommerce blocks style
+	 *
+	 * As it's affects the Bricks "Notice" element styles since WooCommerce 8.5.1
+	 *
+	 * @since 1.9.6
+	 */
+	public function dequeue_wc_blocks_css() {
+		wp_dequeue_style( 'wc-blocks-style' );
 	}
 
 	/**
@@ -1555,8 +1568,10 @@ class Woocommerce {
 	 *
 	 * Return template data rendered via Bricks template shortcode.
 	 *
-	 * (@since 1.8) Return template id if render is false, this is because we do not trigger any hooks when we are not rendering the template.
-	 * Example: do_shortcode will be execute in post_class filter, which will trigger the do_shortcode action, and causing wc_print_notices to be executed in post_class filter before the actual template is rendered. Resulted actual template rendering empty notices. (wc_print_notices() will erase the notices after it is executed)
+	 * @since 1.8: Return template ID if render is false (to not trigger any hooks when we are not rendering the template)
+	 * Example: do_shortcode will be execute in post_class filter, which will trigger the do_shortcode action,
+	 * and causing wc_print_notices to be executed in post_class filter before the actual template is rendered.
+	 * Resulted actual template rendering empty notices. (wc_print_notices() will erase the notices after it is executed)
 	 *
 	 * @see /includes/woocommerce/cart/cart.php (wc_cart), etc.
 	 *
@@ -1565,18 +1580,46 @@ class Woocommerce {
 	public static function get_template_data_by_type( $type = '', $render = true ) {
 		// Do not check for Database::get_setting( 'defaultTemplatesDisabled' )
 		$template_ids = Templates::get_templates_by_type( $type );
+		$template_id  = $template_ids[0] ?? false;
 
 		// No template found
-		if ( empty( $template_ids[0] ) ) {
+		if ( ! $template_id ) {
 			return false;
 		}
 
 		// Return template id if render is false
 		if ( ! $render ) {
-			return $template_ids[0];
+			return $template_id;
 		}
 
-		return do_shortcode( '[bricks_template id="' . $template_ids[0] . '"]' );
+		$output = '';
+
+		/**
+		 * Add page settings custom CSS to return with rendered template
+		 *
+		 * For Woo cart, checkout, account pages, etc.
+		 *
+		 * @since 1.9.6
+		 */
+		$template_page_settings = get_post_meta( $template_id, BRICKS_DB_PAGE_SETTINGS, true );
+		if ( $template_page_settings ) {
+			$page_settings_controls = Settings::get_controls_data( 'page' );
+			$page_settings_css      = Assets::generate_inline_css_from_element(
+				[ 'settings' => $template_page_settings ],
+				$page_settings_controls['controls'],
+				'page'
+			);
+
+			// Add style to template output
+			if ( $page_settings_css ) {
+				$output .= "<style>$page_settings_css</style>";
+			}
+		}
+
+		// Render template output
+		$output .= do_shortcode( "[bricks_template id=\"$template_id\"]" );
+
+		return $output;
 	}
 
 	/**
@@ -1709,6 +1752,11 @@ class Woocommerce {
 	public function set_products_query_vars( $query_vars, $settings, $element_id ) {
 		if ( ! isset( $query_vars['post_type'] ) ) {
 			return $query_vars;
+		}
+
+		// Convert post_type to array if it is a string (@since 1.9.6)
+		if ( is_string( $query_vars['post_type'] ) ) {
+			$query_vars['post_type'] = [ $query_vars['post_type'] ];
 		}
 
 		if ( is_array( $query_vars['post_type'] ) && ! in_array( 'product', $query_vars['post_type'] ) ) {

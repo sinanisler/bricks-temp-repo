@@ -4,11 +4,25 @@ namespace Bricks;
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 class Frontend {
+	public static $area = 'content';
+
 	/**
-	 * List of elements requested for rendering (format: ID => element)
+	 * Elements requested for rendering
+	 *
+	 * key: ID
+	 * value: element data
 	 */
 	public static $elements = [];
-	public static $area     = 'content';
+
+	/**
+	 * Live search results selectors
+	 *
+	 * key: live search ID
+	 * value: live search results CSS selector
+	 *
+	 * @since 1.9.6
+	 */
+	public static $live_search_wrapper_selectors = [];
 
 	public function __construct() {
 		add_action( 'wp_head', [ $this, 'add_seo_meta_tags' ], 1 );
@@ -327,6 +341,18 @@ class Frontend {
 			wp_deregister_style( 'wp-mediaelement' );
 		}
 
+		global $wp;
+
+		$base_url = home_url( $wp->request );
+
+		// Check if the URL contains a paging path (/page/X)
+		if ( preg_match( '/\/page\/\d+\/?$/', $base_url, $matches ) ) {
+			$paging_path = $matches[0];
+			$base_url    = str_replace( $paging_path, '', $base_url );
+		}
+
+		$base_url = trailingslashit( $base_url );
+
 		wp_localize_script(
 			'bricks-scripts',
 			'bricksData',
@@ -336,6 +362,7 @@ class Frontend {
 				'ajaxUrl'                 => admin_url( 'admin-ajax.php' ),
 				'restApiUrl'              => Api::get_rest_api_url(),
 				'nonce'                   => wp_create_nonce( 'bricks-nonce' ),
+				'formNonce'               => wp_create_nonce( 'bricks-form-nonce' ),
 				'wpRestNonce'             => wp_create_nonce( 'wp_rest' ),
 				'postId'                  => Database::$page_data['preview_or_post_id'] ?? get_the_ID(),
 				'recaptchaIds'            => [],
@@ -346,6 +373,15 @@ class Frontend {
 				'swiperInstances'         => [], // To destroy and then re-init SwiperJS instances
 				'queryLoopInstances'      => [], // To hold the query data for infinite scroll + load more
 				'interactions'            => [], // Holds all the interactions
+				'filterInstances'         => [], // Holds all the filter instances (@since 1.9.6)
+				'isotopeInstances'        => [], // Holds all the isotope instances (@since 1.9.6)
+				'mapStyles'               => Setup::get_map_styles(),
+				'facebookAppId'           => isset( Database::$global_settings['facebookAppId'] ) ? Database::$global_settings['facebookAppId'] : false,
+				'headerPosition'          => Database::$header_position,
+				'offsetLazyLoad'          => ! empty( Database::$global_settings['offsetLazyLoad'] ) ? Database::$global_settings['offsetLazyLoad'] : 300,
+				'baseUrl'                 => $base_url, // @since 1.9.6
+				'useQueryFilter'          => Helpers::enabled_query_filters(), // @since 1.9.6
+				'pageFilters'             => Query_Filters::$page_filters, // @since 1.9.6
 				'facebookAppId'           => Database::$global_settings['facebookAppId'] ?? false,
 				'offsetLazyLoad'          => Database::$global_settings['offsetLazyLoad'] ?? 300,
 				'headerPosition'          => Database::$header_position,
@@ -553,12 +589,26 @@ class Frontend {
 		foreach ( $elements as $element ) {
 			if ( isset( $element['id'] ) ) {
 				self::$elements[ $element['id'] ] = $element;
+
+				/**
+				 * Store live search results selectors
+				 *
+				 * To set element root data attribute 'data-brx-ls-wrapper' to hide live search wrapper on page load (@see container.php:902)
+				 *
+				 * @since 1.9.6
+				 */
+				if (
+					Helpers::enabled_query_filters() &&
+					! empty( $element['settings']['query']['is_live_search'] ) &&
+					! empty( $element['settings']['query']['is_live_search_wrapper_selector'] )
+				) {
+					self::$live_search_wrapper_selectors[ $element['id'] ] = $element['settings']['query']['is_live_search_wrapper_selector'];
+				}
 			}
 		}
 
+		// Generate elements HTML
 		$content = '';
-
-		$element_index = 0;
 
 		foreach ( $elements as $element ) {
 			if ( ! empty( $element['parent'] ) ) {
@@ -566,8 +616,6 @@ class Frontend {
 			}
 
 			$content .= self::render_element( $element );
-
-			$element_index++;
 		}
 
 		// NOTE: Undocumented. Useful to re-add plugin actions/filters (@since 1.5.4)

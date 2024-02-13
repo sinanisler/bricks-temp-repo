@@ -696,9 +696,8 @@ class Assets {
 			Settings::set_controls();
 		}
 
+		$page_settings_css      = '';
 		$page_settings_controls = Settings::get_controls_data( 'page' );
-
-		$page_settings_css = '';
 
 		foreach ( $post_ids as $post_id ) {
 			$page_settings = get_post_meta( $post_id, BRICKS_DB_PAGE_SETTINGS, true );
@@ -1858,7 +1857,7 @@ class Assets {
 
 								$gradient_declaration .= "$radial_shape $radial_size at $radial_position, ";
 							}
-							// STEP: Set conic gradient angle & position (@since 1.x)
+							// STEP: Set conic gradient angle & position
 							elseif ( $gradient_type === 'conic' ) {
 								$conic_angle    = isset( $setting_value['conicAngle'] ) ? "{$setting_value['conicAngle']}deg" : '0deg';
 								$conic_position = $setting_value['conicPosition'] ?? 'center';

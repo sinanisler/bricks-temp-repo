@@ -21,13 +21,13 @@ class Init {
 	 */
 	public function form_submit() {
 		// Return: Invalid form nonce
-		if ( ! check_ajax_referer( 'bricks-nonce', 'nonce', false ) ) {
+		if ( ! check_ajax_referer( 'bricks-form-nonce', 'nonce', false ) ) {
 			wp_send_json_error(
 				[
-					'code'    => 400,
 					'action'  => '',
+					'code'    => 'invalid_nonce', // special code for invalid nonce (@since 1.9.6)
 					'type'    => 'error',
-					'message' => esc_html__( 'Invalid nonce.', 'bricks' ),
+					'message' => esc_html__( 'Invalid form token.', 'bricks' ),
 				]
 			);
 		}
@@ -230,12 +230,12 @@ class Init {
 		 */
 		$skip_check_for_field_ids = [];
 
-		// Check if 'reset-password' is among the set actions for the form (@since 1.9.3)
+		// Check if 'reset-password' is among the set actions for the form
 		if ( in_array( 'reset-password', $this->form_settings['actions'], true ) ) {
 			array_push( $skip_check_for_field_ids, 'key', 'login' );
 		}
 
-		// Check if 'login' is among the set actions for the form (@since 1.x)
+		// Check if 'login' is among the set actions for the form
 		if ( in_array( 'login', $this->form_settings['actions'], true ) ) {
 			array_push( $skip_check_for_field_ids, 'redirect_to' );
 		}
@@ -470,7 +470,7 @@ class Init {
 			$allowed_mime_types_for_field = $all_mime_types; // Default to default mime types if no mime types are set in the form field settings
 
 			foreach ( $this->form_settings['fields'] as $field ) {
-				// Maybe custom field name in used (@since 1.x)
+				// Maybe custom field name in used
 				if ( ( $field['id'] === $field_id ) ||
 					( ! empty( $field['name'] ) && $field['name'] === $field_id )
 				) {

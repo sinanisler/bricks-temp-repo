@@ -72,6 +72,9 @@ class Admin {
 		add_action( 'admin_init', [ $this, 'schedule_instagram_access_token_refresh' ] );
 		add_action( 'bricks_refresh_instagram_access_token', [ $this, 'refresh_instagram_access_token' ] );
 		add_filter( 'cron_schedules', [ $this, 'monthly_cron_schedule' ] );
+
+		// Reindex query filters records (@since 1.9.6)
+		add_action( 'wp_ajax_bricks_reindex_filters', [ $this, 'query_filters_reindex' ] );
 	}
 
 	/**
@@ -609,6 +612,14 @@ class Admin {
 			\Bricks\Integrations\Form\Submission_Database::maybe_create_table();
 		}
 
+		// Download remote templates from server and store as db option
+		Templates::get_remote_templates_data();
+
+		// Maybe create query filters table (@since 1.9.6)
+		if ( isset( $settings['enableQueryFilters'] ) ) {
+			\Bricks\Query_Filters::get_instance()->maybe_create_tables();
+		}
+
 		wp_send_json_success(
 			[
 				'new_settings'    => $new_settings,
@@ -1010,6 +1021,7 @@ class Admin {
 				'confirmDropFormSubmissionsTable'   => esc_html__( 'You are about to delete all form submissions (including the database table). Do you wish to proceed?', 'bricks' ),
 				'confirmResetFormSubmissionsTable'  => esc_html__( 'You are about to delete all form submissions. Do you wish to proceed?', 'bricks' ),
 				'confirmResetFormSubmissionsFormId' => sprintf( esc_html__( 'You are about to delete all form submissions of form ID %s. Do you wish to proceed?', 'bricks' ), '[form_id]' ),
+				'confirmReindexFilters'             => esc_html__( 'You are about to regenerate indexes for all query filters. Do you wish to proceed?', 'bricks' ),
 				'formSubmissionsSearchPlaceholder'  => esc_html__( 'Form data', 'bricks' ),
 				'deleteBricksDataUrl'               => Helpers::delete_bricks_data_by_post_id(),
 				'builderEditLink'                   => Helpers::get_builder_edit_link(),
@@ -1678,5 +1690,23 @@ class Admin {
 		}
 
 		wp_die();
+	}
+
+	/**
+	 * Reindex query filters
+	 *
+	 * @since 1.9.6
+	 */
+	public function query_filters_reindex() {
+		Ajax::verify_nonce();
+
+		// Reindex query filters
+		$result = Query_Filters::get_instance()->reindex();
+
+		if ( $result ) {
+			wp_send_json_success( [ 'message' => esc_html__( 'Query filters reindexed successfully.', 'bricks' ) ] );
+		} else {
+			wp_send_json_error( [ 'message' => esc_html__( 'Something went wrong.', 'bricks' ) ] );
+		}
 	}
 }

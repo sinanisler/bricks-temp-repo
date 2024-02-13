@@ -1,11 +1,11 @@
 <?php
 $controls = [];
 
-// Fields
+// Field
 
-$controls['fieldsSeparator'] = [
+$controls['fieldSeparator'] = [
 	'type'  => 'separator',
-	'label' => esc_html__( 'Fields', 'bricks' ),
+	'label' => esc_html__( 'Field', 'bricks' ),
 ];
 
 $controls['labelTypography'] = [
@@ -15,6 +15,10 @@ $controls['labelTypography'] = [
 		[
 			'property' => 'font',
 			'selector' => '.form-group label',
+		],
+		[
+			'property' => 'font',
+			'selector' => '.form-group .label',
 		],
 	],
 ];
@@ -35,7 +39,7 @@ $controls['placeholderTypography'] = [
 ];
 
 $controls['fieldTypography'] = [
-	'label' => esc_html__( 'Field typography', 'bricks' ),
+	'label' => esc_html__( 'Typography', 'bricks' ),
 	'type'  => 'typography',
 	'css'   => [
 		[
@@ -54,7 +58,7 @@ $controls['fieldTypography'] = [
 ];
 
 $controls['fieldBackgroundColor'] = [
-	'label' => esc_html__( 'Field background', 'bricks' ),
+	'label' => esc_html__( 'Background color', 'bricks' ),
 	'type'  => 'color',
 	'css'   => [
 		[
@@ -77,7 +81,7 @@ $controls['fieldBackgroundColor'] = [
 ];
 
 $controls['fieldBorder'] = [
-	'label' => esc_html__( 'Field border', 'bricks' ),
+	'label' => esc_html__( 'Border', 'bricks' ),
 	'type'  => 'border',
 	'css'   => [
 		[
@@ -108,7 +112,7 @@ $controls['fieldBorder'] = [
 ];
 
 $controls['fieldMargin'] = [
-	'label' => esc_html__( 'Field margin', 'bricks' ),
+	'label' => esc_html__( 'Spacing', 'bricks' ),
 	'type'  => 'spacing',
 	'css'   => [
 		[
@@ -119,7 +123,7 @@ $controls['fieldMargin'] = [
 ];
 
 $controls['fieldPadding'] = [
-	'label' => esc_html__( 'Field padding', 'bricks' ),
+	'label' => esc_html__( 'Padding', 'bricks' ),
 	'type'  => 'spacing',
 	'css'   => [
 		[

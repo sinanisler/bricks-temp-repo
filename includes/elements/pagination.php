@@ -255,7 +255,7 @@ class Pagination extends Element {
 		}
 
 		// Return: Less than two pages (@since 1.9.1)
-		if ( $total_pages <= 1 ) {
+		if ( $total_pages <= 1 && ( bricks_is_builder_call() || bricks_is_builder() ) ) {
 			return $this->render_element_placeholder(
 				[
 					'title' => esc_html__( 'No pagination results.', 'bricks' ),
@@ -280,11 +280,7 @@ class Pagination extends Element {
 			);
 		}
 
-		// AJAX pagination
-		if ( isset( $settings['ajax'] ) && ! empty( $settings['queryId'] ) && $settings['queryId'] !== 'main' ) {
-			$this->set_attribute( '_root', 'class', 'brx-ajax-pagination' );
-			$this->set_attribute( '_root', 'data-query-element-id', $settings['queryId'] );
-		}
+		$this->set_ajax_attributes();
 
 		echo "<div {$this->render_attributes( '_root' )}>" . $pagination . '</div>';
 	}
@@ -310,4 +306,34 @@ class Pagination extends Element {
 
 		return $args;
 	}
+
+	/**
+	 * Set AJAX attributes
+	 */
+	private function set_ajax_attributes() {
+		$settings = $this->settings;
+
+		if ( ! isset( $settings['ajax'] ) || empty( $settings['queryId'] ) || $settings['queryId'] === 'main' ) {
+			return;
+		}
+
+		if ( ! Helpers::enabled_query_filters() ) {
+			// Normal AJAX pagination
+			$this->set_attribute( '_root', 'class', 'brx-ajax-pagination' );
+			$this->set_attribute( '_root', 'data-query-element-id', $settings['queryId'] );
+		} else {
+			// Filter type AJAX Pagination
+			$filter_settings = [
+				'filterId'            => $this->id,
+				'targetQueryId'       => $settings['queryId'],
+				'filterAction'        => 'filter',
+				'filterType'          => 'pagination',
+				'filterMethod'        => 'ajax',
+				'filterApplyOn'       => 'change',
+				'filterInputDebounce' => 500,
+			];
+			$this->set_attribute( '_root', 'data-brx-filter', wp_json_encode( $filter_settings ) );
+		}
+	}
+
 }

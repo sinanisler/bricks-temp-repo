@@ -13,52 +13,38 @@ class Element_List extends Element {
 	}
 
 	public function set_control_groups() {
-		$this->control_groups['items'] = [
-			'title' => esc_html__( 'Items', 'bricks' ),
-			'tab'   => 'content',
-		];
-
 		$this->control_groups['item'] = [
 			'title' => esc_html__( 'List item', 'bricks' ),
-			'tab'   => 'content',
 		];
 
 		$this->control_groups['highlight'] = [
 			'title' => esc_html__( 'Highlight', 'bricks' ),
-			'tab'   => 'content',
 		];
 
 		$this->control_groups['icon'] = [
 			'title' => esc_html__( 'Icon', 'bricks' ),
-			'tab'   => 'content',
 		];
 
 		$this->control_groups['title'] = [
 			'title' => esc_html__( 'Title', 'bricks' ),
-			'tab'   => 'content',
 		];
 
 		$this->control_groups['meta'] = [
 			'title' => esc_html__( 'Meta', 'bricks' ),
-			'tab'   => 'content',
 		];
 
 		$this->control_groups['description'] = [
 			'title' => esc_html__( 'Description', 'bricks' ),
-			'tab'   => 'content',
 		];
 
 		$this->control_groups['separator'] = [
 			'title' => esc_html__( 'Separator', 'bricks' ),
-			'tab'   => 'content',
 		];
 	}
 
 	public function set_controls() {
 		$this->controls['items'] = [
-			'tab'           => 'content',
-			'group'         => 'items',
-			'placeholder'   => esc_html__( 'List items', 'bricks' ),
+			'label'         => esc_html__( 'List items', 'bricks' ),
 			'type'          => 'repeater',
 			'selector'      => 'li',
 			'titleProperty' => 'title',

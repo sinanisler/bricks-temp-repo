@@ -46,6 +46,8 @@ class Theme {
 
 	public $auth_redirects;
 
+	public $query_filters;
+
 	/**
 	 * The one and only Theme instance
 	 *
@@ -94,7 +96,7 @@ class Theme {
 		$this->interactions = new Interactions();
 		$this->popups       = new Popups();
 
-		// Element Conditions API (@since 1.8.4)
+		// Element Conditions API
 		$this->conditions = new Conditions();
 
 		$this->auth_redirects = new Auth_Redirects();
@@ -162,8 +164,13 @@ class Theme {
 			}
 		}
 
-		// @since 1.3.4
 		$this->assets = new Assets();
+
+		// Query Filters (@since 1.9.6)
+		if ( Helpers::enabled_query_filters() ) {
+			$this->query_filters = Query_Filters::get_instance();
+		}
+
 	}
 
 	/**

@@ -93,8 +93,6 @@ class Auth_Redirects {
 
 	/**
 	 * Clears the bypass cookie when the user logs in.
-	 *
-	 * @since 1.x
 	 */
 	public function clear_bypass_auth_cookie() {
 		if ( isset( $_COOKIE['brx_use_wp_login'] ) ) {
@@ -122,7 +120,7 @@ class Auth_Redirects {
 	private function redirect_to_custom_login_page() {
 		$selected_login_page_id = Database::get_setting( 'login_page' );
 
-		 // Filter for the login page redirect (@since 1.x)
+		 // Filter for the login page redirect
 		$selected_login_page_id = apply_filters( 'bricks/auth/custom_login_redirect', $selected_login_page_id );
 
 		$this->redirect_if_valid_page( $selected_login_page_id );
@@ -134,7 +132,7 @@ class Auth_Redirects {
 	private function redirect_to_custom_lost_password_page() {
 		$selected_lost_password_page_id = Database::get_setting( 'lost_password_page' );
 
-		// Filter for the lost password page redirect (@since 1.x)
+		// Filter for the lost password page redirect
 		$selected_lost_password_page_id = apply_filters( 'bricks/auth/custom_lost_password_redirect', $selected_lost_password_page_id );
 
 		$this->redirect_if_valid_page( $selected_lost_password_page_id );
@@ -146,7 +144,7 @@ class Auth_Redirects {
 	private function redirect_to_custom_registration_page() {
 		$selected_registration_page_id = Database::get_setting( 'registration_page' );
 
-		// Filter for the registration page redirect (@since 1.x)
+		// Filter for the registration page redirect
 		$selected_registration_page_id = apply_filters( 'bricks/auth/custom_registration_redirect', $selected_registration_page_id );
 
 		$this->redirect_if_valid_page( $selected_registration_page_id );
@@ -158,7 +156,7 @@ class Auth_Redirects {
 	private function redirect_to_custom_reset_password_page() {
 		$selected_reset_password_page_id = Database::get_setting( 'reset_password_page' );
 
-		// Filter for the reset password page redirect (@since 1.x)
+		// Filter for the reset password page redirect
 		$selected_reset_password_page_id = apply_filters( 'bricks/auth/custom_reset_password_redirect', $selected_reset_password_page_id );
 
 		$this->redirect_if_valid_page( $selected_reset_password_page_id );

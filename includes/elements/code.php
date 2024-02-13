@@ -204,7 +204,7 @@ class Element_Code extends Element {
 			}
 
 			// No root wrapper (frontend only, wrapper required in builder to get all inner nodes)
-			if ( isset( $settings['noRoot'] ) && ! bricks_is_builder() && ! bricks_is_builder_call() ) {
+			if ( isset( $settings['noRootForce'] ) || ( isset( $settings['noRoot'] ) && ! bricks_is_builder() && ! bricks_is_builder_call() ) ) {
 				echo $output;
 			} else {
 				echo "<div {$this->render_attributes( '_root' )}>{$output}</div>";

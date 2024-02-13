@@ -42,9 +42,8 @@ class Element_Form extends Element {
 						wp_enqueue_style( 'bricks-flatpickr' );
 					}
 
-					// Load datepicker localisation (@since 1.8.6)
-					$l10n = ! empty( $field['l10n'] ) ? $field['l10n'] : '';
-
+					// Load datepicker localisation
+					$l10n = $field['l10n'] ?? '';
 					if ( $l10n ) {
 						wp_enqueue_script( 'bricks-flatpickr-l10n', "https://npmcdn.com/flatpickr@4.6.13/dist/l10n/$l10n.js", [ 'bricks-flatpickr' ], '4.6.13' );
 					}
@@ -190,6 +189,7 @@ class Element_Form extends Element {
 				'value'                      => [
 					'label'    => esc_html__( 'Value', 'bricks' ),
 					'type'     => 'text',
+					'info'     => esc_html__( 'Set the default field value/content.', 'bricks' ),
 					'required' => [ 'type', '!=', [ 'file', 'html' ] ],
 				],
 
@@ -206,8 +206,9 @@ class Element_Form extends Element {
 				],
 
 				'name'                       => [
-					'label'    => esc_html__( 'Name', 'bricks' ),
+					'label'    => esc_html__( 'Name', 'bricks' ) . ' (' . esc_html__( 'Attribute', 'bricks' ) . ')',
 					'type'     => 'text',
+					'info'     => esc_html__( 'Use valid HTML syntax. No spaces.', 'bricks' ),
 					'required' => [ 'type', '!=', [ 'html' ] ],
 				],
 
@@ -329,6 +330,22 @@ class Element_Form extends Element {
 					'required' => [ 'type', '=', 'file' ],
 				],
 
+				// 'span'                       => [
+				// 'label'       => esc_html__( 'Span .. columns', 'bricks' ),
+				// 'type'        => 'number',
+				// 'placeholder' => 1,
+				// 'css'         => [
+				// [
+				// 'property' => 'grid-column',
+				// 'value'    => 'span %s',
+				// ],
+				// ],
+				// 'required'    => [
+				// [ 'type', '!=', 'hidden' ],
+				// [ 'columns', '!=', '' ],
+				// ],
+				// ],
+
 				'width'                      => [
 					'label'       => esc_html__( 'Width', 'bricks' ) . ' (%)',
 					'type'        => 'number',
@@ -341,7 +358,10 @@ class Element_Form extends Element {
 							'property' => 'width',
 						],
 					],
-					'required'    => [ 'type', '!=', [ 'hidden' ] ],
+					'required'    => [
+						[ 'type', '!=', 'hidden' ],
+						// [ 'columns', '=', '' ],
+					],
 				],
 
 				'height'                     => [
@@ -359,7 +379,7 @@ class Element_Form extends Element {
 				'time'                       => [
 					'label'    => esc_html__( 'Enable time', 'bricks' ),
 					'type'     => 'checkbox',
-					'required' => [ 'type', '=', [ 'datepicker' ] ],
+					'required' => [ 'type', '=', 'datepicker' ],
 				],
 
 				'l10n'                       => [
@@ -457,6 +477,10 @@ class Element_Form extends Element {
 					'property' => 'font',
 					'selector' => 'label',
 				],
+				[
+					'property' => 'font',
+					'selector' => '.label',
+				],
 			],
 			'required' => [ 'showLabels' ],
 		];
@@ -478,6 +502,73 @@ class Element_Form extends Element {
 			],
 		];
 
+		/**
+		 * Grid columns
+		 *
+		 * NOTE: Not yet in use.
+		 *
+		 * @since 1.x
+		 */
+		// $this->controls['columns'] = [
+		// 'tab'         => 'content',
+		// 'group'       => 'fields',
+		// 'label'       => esc_html__( 'Columns', 'bricks' ),
+		// 'type'        => 'number',
+		// 'css'         => [
+		// [
+		// 'property' => 'grid-template-columns',
+		// 'selector' => '',
+		// 'value'    => 'repeat(%s, 1fr)',
+		// ],
+		// [
+		// 'selector' => '',
+		// 'property' => 'display',
+		// 'value'    => 'grid',
+		// ],
+		// [
+		// 'selector' => '.submit-button-wrapper',
+		// 'property' => 'align-items',
+		// 'value'    => 'flex-start',
+		// ],
+		// ],
+		// 'placeholder' => 1,
+		// ];
+
+		// $this->controls['columnGap'] = [
+		// 'tab'      => 'content',
+		// 'group'    => 'fields',
+		// 'label'    => esc_html__( 'Column gap', 'bricks' ),
+		// 'type'     => 'number',
+		// 'units'    => true,
+		// 'css'      => [
+		// [
+		// 'property' => 'column-gap',
+		// 'selector' => '',
+		// ],
+		// ],
+		// 'required' => [ 'columns', '!=', '' ],
+		// ];
+
+		// $this->controls['rowGap'] = [
+		// 'tab'      => 'content',
+		// 'group'    => 'fields',
+		// 'label'    => esc_html__( 'Row gap', 'bricks' ),
+		// 'type'     => 'number',
+		// 'units'    => true,
+		// 'css'      => [
+		// [
+		// 'property' => 'row-gap',
+		// 'selector' => '',
+		// ],
+		// [
+		// 'selector' => '.form-group:not(:last-child)',
+		// 'property' => 'padding',
+		// 'value'    => '0',
+		// ],
+		// ],
+		// 'required' => [ 'columns', '!=', '' ],
+		// ];
+
 		// Field
 
 		$this->controls['fieldSeparator'] = [
@@ -488,22 +579,16 @@ class Element_Form extends Element {
 		];
 
 		$this->controls['fieldMargin'] = [
-			'tab'         => 'content',
-			'group'       => 'fields',
-			'label'       => esc_html__( 'Margin', 'bricks' ),
-			'type'        => 'spacing',
-			'css'         => [
+			'tab'   => 'content',
+			'group' => 'fields',
+			'label' => esc_html__( 'Spacing', 'bricks' ),
+			'type'  => 'spacing',
+			'css'   => [
 				// Use padding (as margin results in line-breaks)
 				[
 					'property' => 'padding',
 					'selector' => '.form-group:not(:last-child)',
 				],
-			],
-			'placeholder' => [
-				'top'    => 0,
-				'right'  => 0,
-				'bottom' => '20px',
-				'left'   => 0,
 			],
 		];
 
@@ -593,7 +678,7 @@ class Element_Form extends Element {
 				],
 				[
 					'property' => 'border',
-					'selector' => '.bricks-button',
+					'selector' => '.bricks-button:not([type=submit])',
 				],
 				[
 					'property' => 'border',
@@ -654,6 +739,21 @@ class Element_Form extends Element {
 			'placeholder' => esc_html__( 'Custom', 'bricks' ),
 		];
 
+		// $this->controls['submitButtonSpan'] = [
+		// 'tab'      => 'content',
+		// 'group'    => 'submitButton',
+		// 'label'    => esc_html__( 'Span .. columns', 'bricks' ),
+		// 'type'     => 'number',
+		// 'css'      => [
+		// [
+		// 'property' => 'grid-column',
+		// 'selector' => '.submit-button-wrapper',
+		// 'value'    => 'span %s',
+		// ],
+		// ],
+		// 'required' => [ 'columns', '!=', '' ],
+		// ];
+
 		$this->controls['submitButtonWidth'] = [
 			'tab'   => 'content',
 			'group' => 'submitButton',
@@ -666,6 +766,7 @@ class Element_Form extends Element {
 					'selector' => '.submit-button-wrapper',
 				],
 			],
+			// 'required' => [ 'columns', '=', '' ],
 		];
 
 		$this->controls['submitButtonMargin'] = [
@@ -1799,17 +1900,24 @@ class Element_Form extends Element {
 
 			foreach ( $settings['fields'] as $index => $field ) {
 				$field_value = isset( $field['value'] ) ? $this->render_dynamic_data( $field['value'] ) : ''; // @since 1.9.3
+
+				// Set the role and aria-labelledby attributes for the options wrapper (@since 1.9.6)
+				$this->set_attribute( "field-wrapper-$index", 'role', $field['type'] === 'radio' ? 'radiogroup' : 'group' );
+
+				// Group label ID for aria-labelledby (@since 1.9.6)
+				$this->set_attribute( "field-wrapper-$index", 'aria-labelledby', "label-{$field['id']}" );
 				?>
-			<div <?php echo $this->render_attributes( "field-wrapper-$index" ); ?>>
+
+				<div <?php echo $this->render_attributes( "field-wrapper-$index" ); ?>>
 				<?php
-				if ( isset( $settings['showLabels'] ) && isset( $field['label'] ) && $field['type'] !== 'hidden' ) {
+				// Standard field label
+				if ( isset( $settings['showLabels'] ) && ! empty( $field['label'] ) && $field['type'] !== 'checkbox' && $field['type'] !== 'radio' && $field['type'] !== 'hidden' ) {
 					echo "<label {$this->render_attributes( "label-$index" )}>{$field['label']}</label>";
 				}
 
-				// To ensure that checkbox and radio fields always have a label (otherwise no real context)
-				elseif ( in_array( $field['type'], [ 'checkbox', 'radio' ] ) && ! empty( $field['placeholder'] ) ) {
-					$this->set_attribute( "label-$index", 'id', "label-{$field['id']}" );
-					echo "<label {$this->render_attributes( "label-$index" )}>{$field['placeholder']}</label>";
+				// Group label for checkbox or radio input using a <div> instead of <label> (@since 1.9.6)
+				elseif ( ! empty( $field['label'] ) && in_array( $field['type'], [ 'checkbox', 'radio' ] ) ) {
+					echo "<div class=\"label\" id=\"label-{$field['id']}\">{$field['label']}</div>";
 				}
 
 				/**
@@ -1884,15 +1992,6 @@ class Element_Form extends Element {
 
 				<?php
 				if ( ( $field['type'] === 'checkbox' || $field['type'] === 'radio' ) && ! empty( $field['options'] ) ) {
-					// Determine the role based on the field type (@since 1.9.5)
-					$role = $field['type'] === 'radio' ? 'radiogroup' : 'group';
-
-					 // Set the role and aria-labelledby attributes for the options wrapper (@since 1.9.5)
-					$this->set_attribute( "options-wrapper-$index", 'role', $role );
-
-					// Group label ID for aria-labelledby (@since 1.9.5)
-					$this->set_attribute( "options-wrapper-$index", 'aria-labelledby', "label-{$field['id']}" );
-
 					$checked_values = array_map( 'trim', explode( ',', $field_value ?? '' ) );
 					?>
 				<ul class="options-wrapper" <?php echo $this->render_attributes( "options-wrapper-$index" ); ?>>
@@ -1920,7 +2019,6 @@ class Element_Form extends Element {
 				</ul>
 				<?php } ?>
 			</div>
-
 				<?php
 			}
 

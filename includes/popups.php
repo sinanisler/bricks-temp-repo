@@ -420,7 +420,7 @@ class Popups {
 	/**
 	 * Get breakpoints helper function
 	 *
-	 * @since 1.x
+	 * @since 1.9.2
 	 */
 	private static function get_breakpoints() {
 		if ( self::$breakpoints === null ) {

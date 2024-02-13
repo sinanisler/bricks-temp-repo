@@ -220,7 +220,7 @@ class Submission_Database {
 			'post_id'    => isset( $data['post_id'] ) ? intval( $data['post_id'] ) : 0,
 			'form_id'    => isset( $data['form_id'] ) ? sanitize_text_field( $data['form_id'] ) : '',
 			'created_at' => current_time( 'mysql', true ),
-			'form_data'  => json_encode( $sanitized_form_data ),
+			'form_data'  => wp_json_encode( $sanitized_form_data ),
 			'browser'    => isset( $data['browser'] ) ? sanitize_text_field( $data['browser'] ) : '',
 			'ip'         => isset( $data['ip'] ) ? sanitize_text_field( $data['ip'] ) : '',
 			'os'         => isset( $data['os'] ) ? sanitize_text_field( $data['os'] ) : '',

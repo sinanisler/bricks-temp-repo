@@ -17,9 +17,17 @@ class Element_Text extends Element {
 		$this->controls['_background']['css'][0]['selector'] = '';
 		$this->controls['_border']['css'][0]['selector']     = '';
 
+		// Typography set in element should precede theme style link styles
 		$this->controls['_typography']['css'][] = [
 			'selector' => $this->css_selector . ' a',
 			'property' => 'font',
+		];
+
+		// Inherit font-size set in typograhy on links to prevent issue with units like 'em' (@since 1.9.6)
+		$this->controls['_typography']['css'][] = [
+			'selector' => $this->css_selector . ' a',
+			'property' => 'font-size',
+			'value'    => 'inherit',
 		];
 
 		$this->controls['text'] = [

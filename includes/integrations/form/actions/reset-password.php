@@ -40,7 +40,7 @@ class Reset_Password extends Base {
 		}
 
 		// STEP: Update user password
-		wp_set_password( $new_password, $user->ID );
+		reset_password( $user, $new_password );
 
 		// STEP: Return a success message
 		$form->set_result(

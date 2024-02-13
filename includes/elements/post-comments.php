@@ -556,10 +556,10 @@ class Element_Post_Comments extends Element {
 					switch ( $field ) {
 						case 'author':
 							if ( isset( $settings['label'] ) ) {
-								$field_html .= '<label for="author">' . esc_html__( 'Name', 'bricks' ) . $required_star . '</label>';
+								$field_html .= '<label for="author">' . esc_html_x( 'Name', 'Author name', 'bricks' ) . $required_star . '</label>';
 								$field_html .= '<input id="author" name="author" type="text" value="' . esc_attr( $commenter['comment_author'] ) . '"' . $required_attribute . ' />';
 							} else {
-								$field_html .= '<input id="author" name="author" type="text" value="' . esc_attr( $commenter['comment_author'] ) . '"' . $required_attribute . ' placeholder="' . esc_html__( 'Name', 'bricks' ) . $required_star . '" />';
+								$field_html .= '<input id="author" name="author" type="text" value="' . esc_attr( $commenter['comment_author'] ) . '"' . $required_attribute . ' placeholder="' . esc_html_x( 'Name', 'Author name', 'bricks' ) . $required_star . '" />';
 							}
 							break;
 

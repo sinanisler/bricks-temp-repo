@@ -519,7 +519,7 @@ class Woocommerce_Products_Filters extends Element {
 		echo "<ul {$this->render_attributes( '_root' )}>";
 
 		foreach ( $settings['filters'] as $index => $filter ) {
-			$filter_type = ! empty( $filter['type'] ) ? $filter['type'] : '';
+			$filter_type = $filter['type'] ?? '';
 			$filter_by   = ! empty( $filter[ "{$filter_type}Filter" ] ) ? $filter[ "{$filter_type}Filter" ] : '';
 
 			if ( $filter_by === 'price' ) {
@@ -858,7 +858,7 @@ class Woocommerce_Products_Filters extends Element {
 				<input id="<?php echo $key_base . 'lower'; ?>" class="lower" name="<?php echo $min_arg; ?>" type="range" min="<?php echo $min_value; ?>" max="<?php echo $max_value; ?>" step="1" value="<?php echo esc_attr( $value_min ); ?>">
 				<label for="<?php echo $key_base . 'upper'; ?>" class="upper"><?php esc_html_e( 'Max. price', 'bricks' ); ?></label>
 				<input id="<?php echo $key_base . 'upper'; ?>" class="upper" name="<?php echo $max_arg; ?>" type="range" min="<?php echo $min_value; ?>" max="<?php echo $max_value; ?>" step="1" value="<?php echo esc_attr( $value_max ); ?>">
-				<div class="value-wrapper">
+				<div class="value-wrap">
 					<span class="value lower"></span>
 					<span class="value upper"></span>
 				</div>

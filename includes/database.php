@@ -996,7 +996,7 @@ class Database {
 			}
 		}
 
-		// Global classes categories (@since 1.x)
+		// Global classes categories (@since 1.9.5)
 		if ( is_multisite() && BRICKS_MULTISITE_USE_MAIN_SITE_CLASSES_CATEGORIES ) {
 			self::$global_data['globalClassesCategories'] = get_blog_option( get_main_site_id(), BRICKS_DB_GLOBAL_CLASSES_CATEGORIES, [] );
 		} else {
@@ -1142,8 +1142,22 @@ class Database {
 		$page_footer               = self::get_data( $post_id, 'footer' );
 		self::$page_data['footer'] = is_array( $page_footer ) && count( $page_footer ) ? $page_footer : [];
 
-		// Page settings
-		$page_settings               = get_post_meta( self::$active_templates['content'] ?? $post_id, BRICKS_DB_PAGE_SETTINGS, true );
+		/**
+		 * Page settings
+		 *
+		 * Builder: Use $post_id
+		 * Frontend: Use active template ID
+		 *
+		 * @see #86bx4t5v3
+		 */
+		$page_settings_id = $post_id;
+
+		if ( ! bricks_is_builder() && ! empty( self::$active_templates['content'] ) ) {
+			$page_settings_id = self::$active_templates['content'];
+		}
+
+		$page_settings = get_post_meta( $page_settings_id, BRICKS_DB_PAGE_SETTINGS, true );
+
 		self::$page_data['settings'] = is_array( $page_settings ) && count( $page_settings ) ? $page_settings : [];
 
 		/**

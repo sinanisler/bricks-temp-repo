@@ -61,8 +61,8 @@ class Element_Icon extends Element {
 
 	public function render() {
 		$settings = $this->settings;
-		$icon     = ! empty( $settings['icon'] ) ? $settings['icon'] : false;
-		$link     = ! empty( $settings['link'] ) ? $settings['link'] : false;
+		$icon     = $settings['icon'] ?? false;
+		$link     = $settings['link'] ?? false;
 
 		if ( ! $icon ) {
 			return $this->render_element_placeholder(

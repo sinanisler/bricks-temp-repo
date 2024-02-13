@@ -45,6 +45,12 @@ class Element_Post_Sharing extends Element {
 					],
 				],
 
+				'excerpt'    => [
+					'label'    => esc_html__( 'Excerpt', 'bricks' ),
+					'type'     => 'checkbox',
+					'required' => [ 'service', '=', 'whatsapp' ],
+				],
+
 				'icon'       => [
 					'label' => esc_html__( 'Icon', 'bricks' ),
 					'type'  => 'icon',
@@ -221,7 +227,7 @@ class Element_Post_Sharing extends Element {
 				case 'whatsapp':
 					$aria_label = 'WhatsApp';
 
-					$text = get_the_excerpt( $post );
+					$text = isset( $item['excerpt'] ) ? get_the_excerpt( $post ) : '';
 
 					$data = [
 						'url'     => "https://api.whatsapp.com/send?text=*{$title}*+%0A{$text}%0A{$url}",

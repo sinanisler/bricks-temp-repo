@@ -311,6 +311,11 @@ class Query {
 			unset( $query_vars['infinite_scroll'] );
 		}
 
+		// Unset isLiveSearch (@since 1.9.6)
+		if ( isset( $query_vars['is_live_search'] ) ) {
+			unset( $query_vars['is_live_search'] );
+		}
+
 		// Do not use meta_key if orderby is not set to meta_value or meta_value_num (@since 1.8)
 		if ( isset( $query_vars['meta_key'] ) ) {
 			$orderby = isset( $query_vars['orderby'] ) ? $query_vars['orderby'] : '';
@@ -385,6 +390,13 @@ class Query {
 				$query_vars          = array_merge( $query_vars, $php_query );
 				$query_vars['paged'] = self::get_paged_query_var( $query_vars );
 			}
+
+			/**
+			 * php Editor not triggering query_vars, new query filters unable to merge query_vars (@since 1.9.6)
+			 * should we go through the switch statement? Otherwise pagination will not work or need to write offset, page logic in the php editor (#86bwwav1e)
+			 */
+			$object_type = empty( $object_type ) ? 'post' : $object_type;
+			$query_vars  = apply_filters( "bricks/{$object_type}s/query_vars", $query_vars, $settings, $element_id );
 
 			return $query_vars;
 		}
@@ -504,6 +516,7 @@ class Query {
 
 				/**
 				 * REST API /load_query_page adds "_merge_vars" to the query to make sure the archive context is maintained on infinite scroll
+				 * Not in use (@since 1.9.5)
 				 *
 				 * @since 1.5.1
 				 */
@@ -632,6 +645,17 @@ class Query {
 		$max_num_pages = $this->max_num_pages;
 		$query_vars    = $this->query_vars;
 
+		/**
+		 * NOTE: Query for live_search should not run on page load
+		 *
+		 * However, this will cause many issues.
+		 * - Elements not showing on the initial page load and their JS will not be enqueue. Subsequent AJAX search unable to initialize the JS
+		 * - Templates are not populated with content on initial page load, especially popup templates. Subsequent AJAX search unable trigger the popup
+		 *
+		 * Current solution: Run the query on initial page load, remove them in render() method if live_search is enabled
+		 *
+		 * @since 1.9.6
+		 */
 		switch ( $this->object_type ) {
 			case 'post':
 				$result = $this->run_wp_query();
@@ -780,10 +804,11 @@ class Query {
 
 			/**
 			 * Set builder preview query_vars as we are not relying on setup_query function in includes/elements/base.php anymore
+			 * Shouldn't merge with preview query_vars if 'disable_query_merge' is set (#86bx7cfxp)
 			 *
 			 * @since 1.9.1
 			 */
-			if ( Helpers::is_bricks_preview() ) {
+			if ( Helpers::is_bricks_preview() && ! isset( $this->query_vars['disable_query_merge'] ) ) {
 				$post_id                    = Database::$page_data['preview_or_post_id'];
 				$builder_preview_query_vars = Helpers::get_template_preview_query_vars( $post_id );
 
@@ -797,6 +822,7 @@ class Query {
 			 * - Not in builder preview
 			 * - Not in single post / page / attachment (@since 1.9.2)
 			 * - Not infinite scroll or load more request (@since 1.9.2)
+			 * - Not render_query_result request (@since 1.9.3)
 			 *
 			 * Otherwise, init a new query.
 			 *
@@ -804,7 +830,7 @@ class Query {
 			 */
 			$is_archive_main_query = isset( $this->settings['query']['is_archive_main_query'] ) ? true : false;
 
-			if ( $is_archive_main_query && ! Helpers::is_bricks_preview() && ! is_singular() && ! Api::is_current_endpoint( 'load_query_page' ) ) {
+			if ( $is_archive_main_query && ! Helpers::is_bricks_preview() && ! is_singular() && ! Api::is_current_endpoint( 'load_query_page' ) && ! Api::is_current_endpoint( 'query_result' ) && ! Api::is_current_endpoint( 'load_popup_content' ) ) {
 				global $wp_query;
 				$posts_query = $wp_query;
 			} else {
@@ -1103,11 +1129,13 @@ class Query {
 
 		// Query is empty
 		if ( empty( $this->count ) ) {
-			$content[] = $this->get_no_results_content();
+			$this->is_looping = false;
+			$content[]        = $this->get_no_results_content();
 		}
 
 		// Iterate
 		else {
+
 			// STEP: Loop posts
 			if ( $this->object_type == 'post' ) {
 
@@ -1166,6 +1194,12 @@ class Query {
 
 					$this->loop_index++;
 				}
+			}
+
+			// STEP: Remove the HTML content if live_search is enabled as it's not needed on initial page load (@since 1.9.6)
+			$is_live_search = $this->settings['query']['is_live_search'] ?? false;
+			if ( $is_live_search && ! Api::is_current_endpoint( 'query_result' ) && Helpers::enabled_query_filters() ) {
+				$content = [];
 			}
 		}
 
@@ -1471,16 +1505,40 @@ class Query {
 
 	public function get_no_results_content() {
 		// Return: Avoid showing no results message when infinite scroll is enabled (@since 1.5.6)
-		if ( bricks_is_rest_call() ) {
+		if ( Api::is_current_endpoint( 'load_query_page' ) ) {
 			return '';
 		}
 
-		$content = isset( $this->settings['query']['no_results_text'] ) ? $this->settings['query']['no_results_text'] : '';
+		// Return: Avoid showing no results message when live search is enabled and not on query_results API endpoint (@since 1.9.6)
+		if ( isset( $this->settings['query']['is_live_search'] ) && ! Api::is_current_endpoint( 'query_result' ) ) {
+			return '';
+		}
 
-		if ( ! empty( $content ) ) {
-			$content = '<div class="bricks-posts-nothing-found"><p>' . $content . '</p></div>';
-			$content = bricks_render_dynamic_data( $content );
-			$content = do_shortcode( $content );
+		$template_id = isset( $this->settings['query']['no_results_template'] ) ? $this->settings['query']['no_results_template'] : false;
+		$text        = isset( $this->settings['query']['no_results_text'] ) ? $this->settings['query']['no_results_text'] : '';
+
+		$content = '';
+
+		if ( ! empty( $text ) || ! empty( $template_id ) ) {
+
+			// Use template if set
+			if ( ! empty( $template_id ) ) {
+				$content = do_shortcode( '[bricks_template id="' . $template_id . '"]' );
+			} else {
+				$content = bricks_render_dynamic_data( $text );
+				$content = do_shortcode( $content ); // It was here @pre1.9.6
+			}
+
+			// Must wrap content inside .bricks-posts-nothing-found to target via JS
+			$content = '<div class="bricks-posts-nothing-found" style="width: inherit; grid-column: 1/-1">' . $content . '</div>';
+
+			// Inline styles needed if query result via AJAX is empty and using a template
+			if ( Api::is_current_endpoint( 'query_result' ) && ! empty( $template_id ) ) {
+				$content .= '<style>';
+				$content .= Assets::$inline_css['global_classes'];
+				$content .= Assets::$inline_css[ "template_$template_id" ];
+				$content .= '</style>';
+			}
 		}
 
 		// @see: https://academy.bricksbuilder.io/article/filter-bricks-query_no_results_content/
@@ -1634,7 +1692,26 @@ class Query {
 		foreach ( $merging_query_vars as $key => $value ) {
 			// If the key already exists in the $original_query_vars, and the value is an array, merge the two arrays
 			if ( isset( $original_query_vars[ $key ] ) && is_array( $original_query_vars[ $key ] ) && is_array( $value ) ) {
-				$original_query_vars[ $key ] = self::merge_query_vars( $original_query_vars[ $key ], $value ); // Recursively merge arrays @since 1.x
+				/**
+				 * Handle special case for 'tax_query'
+				 * merging via key might be wrong, as the key is just index of the array
+				 */
+				if ( $key === 'tax_query' ) {
+					$original_query_vars[ $key ] = self::merge_tax_or_meta_query_vars( $original_query_vars[ $key ], $value, 'tax' );
+				}
+
+				/**
+				 *  NOTE: meta_query should be merged without checking the key.
+				 *  Otherwise multiple meta_query with different comparison operators will not work and always merge into one.
+				 */
+				// elseif ( $key === 'meta_query' ) {
+				// $original_query_vars[ $key ] = self::merge_tax_or_meta_query_vars( $original_query_vars[ $key ], $value, 'meta' );
+				// }
+
+				else {
+					$original_query_vars[ $key ] = self::merge_query_vars( $original_query_vars[ $key ], $value ); // Recursively merge arrays (@since 1.9.6)
+				}
+
 			} else {
 				$original_query_vars[ $key ] = $value;
 			}
@@ -1642,4 +1719,36 @@ class Query {
 
 		return $original_query_vars;
 	}
+
+	/**
+	 * Special case for merging 'tax_query' and 'meta_query' vars
+	 *
+	 * Only merge if the 'taxonomy' or 'key' are identical.
+	 *
+	 * @since 1.9.6
+	 */
+	public static function merge_tax_or_meta_query_vars( $original_tax_query, $merging_tax_query, $type = 'tax' ) {
+		$original_tax_query = array_values( $original_tax_query );
+		$merging_tax_query  = array_values( $merging_tax_query );
+		$target_key         = $type === 'tax' ? 'taxonomy' : 'key';
+		// Merge tax_query or meta_query vars
+		foreach ( $merging_tax_query as $merging_tax_query_item ) {
+			$found = false;
+
+			foreach ( $original_tax_query as $key => $original_tax_query_item ) {
+				if ( $original_tax_query_item[ $target_key ] === $merging_tax_query_item[ $target_key ] ) {
+					$found = true;
+
+					$original_tax_query[ $key ] = self::merge_query_vars( $original_tax_query_item, $merging_tax_query_item );
+				}
+			}
+
+			if ( ! $found ) {
+				$original_tax_query[] = $merging_tax_query_item;
+			}
+		}
+
+		return $original_tax_query;
+	}
+
 }

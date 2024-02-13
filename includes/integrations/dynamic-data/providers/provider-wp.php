@@ -34,208 +34,231 @@ class Provider_Wp extends Base {
 	public function get_tags_config() {
 		$tags = [
 			// Post
-			'post_title'          => [
+			'post_title'                 => [
 				'label' => esc_html__( 'Post title', 'bricks' ),
 				'group' => 'post'
 			],
 
-			'post_id'             => [
+			'post_id'                    => [
 				'label' => esc_html__( 'Post ID', 'bricks' ),
 				'group' => 'post'
 			],
 
-			'post_url'            => [
+			'post_url'                   => [
 				'label' => esc_html__( 'Post link', 'bricks' ),
 				'group' => 'post'
 			],
 
-			'post_date'           => [
+			'post_date'                  => [
 				'label' => esc_html__( 'Post date', 'bricks' ),
 				'group' => 'post',
 			],
 
-			'post_modified'       => [
+			'post_modified'              => [
 				'label' => esc_html__( 'Post modified date', 'bricks' ),
 				'group' => 'post',
 			],
 
-			'post_time'           => [
+			'post_time'                  => [
 				'label' => esc_html__( 'Post time', 'bricks' ),
 				'group' => 'post',
 			],
 
-			'post_comments_count' => [
+			'post_comments_count'        => [
 				'label' => esc_html__( 'Post comments count', 'bricks' ),
 				'group' => 'post'
 			],
 
-			'post_comments'       => [
+			'post_comments'              => [
 				'label' => esc_html__( 'Post comments', 'bricks' ),
 				'group' => 'post'
 			],
 
-			'post_content'        => [
+			'post_content'               => [
 				'label' => esc_html__( 'Post content', 'bricks' ),
 				'group' => 'post'
 			],
 
-			'post_excerpt'        => [
+			'post_excerpt'               => [
 				'label' => esc_html__( 'Post excerpt', 'bricks' ),
 				'group' => 'post'
 			],
 
-			'read_more'           => [
+			'read_more'                  => [
 				'label' => esc_html__( 'Read more', 'bricks' ),
 				'group' => 'post',
 			],
 
 			// Image
-			'featured_image'      => [
+			'featured_image'             => [
 				'label' => esc_html__( 'Featured image', 'bricks' ),
 				'group' => 'post',
 			],
 
-			'featured_image_tag'  => [
+			'featured_image_tag'         => [
 				'label'      => esc_html__( 'Featured image tag', 'bricks' ),
 				'group'      => 'post',
 				'deprecated' => 1
 			],
 
 			// Author
-			'author_name'         => [
+			'author_name'                => [
 				'label' => esc_html__( 'Author name', 'bricks' ),
 				'group' => 'author',
 			],
 
-			'author_bio'          => [
+			'author_bio'                 => [
 				'label' => esc_html__( 'Author bio', 'bricks' ),
 				'group' => 'author',
 			],
 
-			'author_email'        => [
+			'author_email'               => [
 				'label' => esc_html__( 'Author email', 'bricks' ),
 				'group' => 'author',
 			],
 
-			'author_website'      => [
+			'author_website'             => [
 				'label' => esc_html__( 'Author website', 'bricks' ),
 				'group' => 'author',
 			],
 
-			'author_archive_url'  => [
+			'author_archive_url'         => [
 				'label' => esc_html__( 'Author archive URL', 'bricks' ),
 				'group' => 'author',
 			],
 
-			'author_avatar'       => [
+			'author_avatar'              => [
 				'label' => esc_html__( 'Author avatar', 'bricks' ),
 				'group' => 'author',
 			],
 
-			'author_meta'         => [
+			'author_meta'                => [
 				'label' => esc_html__( 'Author meta - add key after :', 'bricks' ),
 				'group' => 'author',
 			],
 
 			// Site
-			'site_title'          => [
+			'site_title'                 => [
 				'label' => esc_html__( 'Site title', 'bricks' ),
 				'group' => 'site',
 			],
 
-			'site_tagline'        => [
+			'site_tagline'               => [
 				'label' => esc_html__( 'Site tagline', 'bricks' ),
 				'group' => 'site',
 			],
 
-			'site_url'            => [
+			'site_url'                   => [
 				'label' => esc_html__( 'Site URL', 'bricks' ),
 				'group' => 'site',
 			],
 
-			'site_login'          => [
+			'site_login'                 => [
 				'label' => esc_html__( 'Login URL', 'bricks' ),
 				'group' => 'site',
 			],
 
-			'site_logout'         => [
+			'site_logout'                => [
 				'label' => esc_html__( 'Logout URL', 'bricks' ),
 				'group' => 'site',
 			],
 
-			'url_parameter'       => [
+			'url_parameter'              => [
 				'label' => esc_html__( 'URL parameter - add key after :', 'bricks' ),
 				'group' => 'site',
 			],
 
 			// Archive
-			'archive_title'       => [
+			'archive_title'              => [
 				'label' => esc_html__( 'Archive title', 'bricks' ),
 				'group' => 'archive',
 			],
 
-			'archive_description' => [
+			'archive_description'        => [
 				'label' => esc_html__( 'Archive description', 'bricks' ),
 				'group' => 'archive',
 			],
 
 			// Terms
-			'term_id'             => [
+			'term_id'                    => [
 				'label'  => esc_html__( 'Term id', 'bricks' ),
 				'group'  => 'terms',
 				'render' => 'terms',
 			],
 
-			'term_name'           => [
+			'term_name'                  => [
 				'label'  => esc_html__( 'Term name', 'bricks' ),
 				'group'  => 'terms',
 				'render' => 'terms',
 			],
 
-			'term_slug'           => [
+			'term_slug'                  => [
 				'label'  => esc_html__( 'Term slug', 'bricks' ),
 				'group'  => 'terms',
 				'render' => 'terms',
 			],
 
-			'term_count'          => [
+			'term_count'                 => [
 				'label'  => esc_html__( 'Term count', 'bricks' ),
 				'group'  => 'terms',
 				'render' => 'terms',
 			],
 
-			'term_url'            => [
+			'term_url'                   => [
 				'label'  => esc_html__( 'Term archive URL', 'bricks' ),
 				'group'  => 'terms',
 				'render' => 'terms',
 			],
 
-			'term_description'    => [
+			'term_description'           => [
 				'label'  => esc_html__( 'Term description', 'bricks' ),
 				'group'  => 'terms',
 				'render' => 'terms',
 			],
 
-			'term_meta'           => [
+			'term_meta'                  => [
 				'label'  => esc_html__( 'Term meta - add key after :', 'bricks' ),
 				'group'  => 'terms',
 				'render' => 'terms',
 			],
 
 			// Date
-			'current_date'        => [
+			'current_date'               => [
 				'label' => esc_html__( 'Current date', 'bricks' ) . ' (UTC)',
 				'group' => 'date',
 			],
 
-			'current_wp_date'     => [
+			'current_wp_date'            => [
 				'label' => esc_html__( 'Current date', 'bricks' ) . ' (WordPress)',
 				'group' => 'date',
 			],
 
-			'query_results_count' => [
+			// Query
+			'query_results_count'        => [
 				'label' => esc_html__( 'Query results count', 'bricks' ),
 				'group' => 'query',
+			],
+
+			'query_results_count_filter' => [
+				'label' => esc_html__( 'Query results count', 'bricks' ) . ' (' . esc_html__( 'Filter', 'bricks' ) . ')',
+				'group' => 'query',
+			],
+
+			/**
+			 * Misc
+			 *
+			 * Live search results, etc.
+			 *
+			 * @since 1.9.6
+			 */
+			'search_term'                => [
+				'label' => esc_html__( 'Search term', 'bricks' ),
+				'group' => 'misc',
+			],
+
+			'search_term_filter'         => [
+				'label' => esc_html__( 'Search term', 'bricks' ) . ' (' . esc_html__( 'Filter', 'bricks' ) . ')',
+				'group' => 'misc',
 			],
 		];
 
@@ -674,7 +697,8 @@ class Provider_Wp extends Base {
 					}
 				}
 
-				$value = $user ? $this->get_user_tag_value( $tag, $user, $filters, $context ) : '';
+				// Separate author tag value logic into separate function (@since 1.9.6)
+				$value = $user ? $this->get_author_tag_value( $tag, $user, $filters, $context ) : '';
 
 				break;
 
@@ -845,10 +869,10 @@ class Provider_Wp extends Base {
 				break;
 
 			case 'query_results_count':
+			case 'query_results_count_filter':
 				// Get the results count from query_history, not supporting nested queries (@since 1.9.1)
 				$query_object = false;
 				$element_id   = ! empty( $filters['meta_key'] ) ? $filters['meta_key'] : false;
-
 				// Element ID provided: Get query object from query history
 				if ( $element_id ) {
 					if ( bricks_is_builder() ) {
@@ -907,6 +931,42 @@ class Provider_Wp extends Base {
 				} else {
 					$value = 0;
 				}
+
+				/**
+				 * {query_results_count_filter} - wrap the value with a span for AJAX update when using query filter feature
+				 * element ID is a must so we know which count to update after AJAX
+				 *
+				 * @since 1.9.6
+				 */
+				if ( $tag === 'query_results_count_filter' && $element_id ) {
+					$filters['skip_sanitize'] = true;
+					$value                    = '<span data-brx-qr-count="' . $element_id . '">' . $value . '</span>';
+				}
+
+				break;
+
+			// @since 1.9.6
+			case 'search_term':
+			case 'search_term_filter':
+				// Get the search term from get_query_var() if not found in $_GET
+				$search_term = isset( $_GET['s'] ) ? $_GET['s'] : get_query_var( 's' );
+				$value       = sanitize_text_field( $search_term );
+
+				$search_query_id = isset( $filters['meta_key'] ) ? $filters['meta_key'] : false;
+				if ( $search_query_id ) {
+					// Get the search term from query_history
+					$search_query = Query::get_query_by_element_id( $search_query_id, true );
+					if ( $search_query && ! empty( $search_query->query_vars['s'] ) ) {
+						$value = sanitize_text_field( $search_query->query_vars['s'] );
+					}
+
+					// {search_term_filter} - wrap the value with a span for AJAX update when using query filter feature
+					if ( $tag === 'search_term_filter' ) {
+						$filters['skip_sanitize'] = true;
+						$value                    = '<span data-brx-ls-term="' . $search_query_id . '">' . $value . '</span>';
+					}
+				}
+
 				break;
 		}
 
@@ -1066,7 +1126,7 @@ class Provider_Wp extends Base {
 	}
 
 	/**
-	 * Render user/author related data
+	 * Render user related data
 	 *
 	 * @param [type]  $tag
 	 * @param WP_User $user
@@ -1080,7 +1140,7 @@ class Provider_Wp extends Base {
 
 		$value = '';
 
-		$field_type = str_replace( [ 'wp_user_','author_' ], '', $tag );
+		$field_type = str_replace( [ 'wp_user_' ], '', $tag );
 
 		switch ( $field_type ) {
 
@@ -1136,16 +1196,88 @@ class Provider_Wp extends Base {
 				if ( ! empty( $filters['meta_key'] ) ) {
 					$value = get_user_meta( $user->ID, $filters['meta_key'], true );
 				}
-
-				break;
-
-			case 'archive_url':
-				$value = get_author_posts_url( $user->ID );
 				break;
 		}
 
 		// NOTE: Undocumented
 		$value = apply_filters( 'bricks/dynamic_data/user_value', $value, $field_type, $filters );
+
+		return $value;
+	}
+
+	/**
+	 * Render author related meta data
+	 *
+	 * Example: Author ID, which isn't available in get_user_meta()
+	 *
+	 * @param [type]  $tag
+	 * @param WP_User $user
+	 * @param [type]  $filters
+	 * @param [type]  $context
+	 *
+	 * @since 1.9.6
+	 */
+	public function get_author_tag_value( $tag, $user, $filters, $context ) {
+		if ( empty( $user->ID ) ) {
+			return '';
+		}
+
+		$value      = '';
+		$field_type = str_replace( [ 'author_' ], '', $tag );
+
+		switch ( $field_type ) {
+			// {author_name} remains same logic for backward compatibility
+			case 'name':
+				if ( ! empty( $user->first_name ) && ! empty( $user->last_name ) ) {
+					$value = trim( $user->first_name . ' ' . $user->last_name );
+				} else {
+					$value = trim( $user->display_name );
+				}
+				break;
+
+			// {author_avatar} remains same logic for backward compatibility
+			case 'avatar':
+				// If context = image, increase the default image size to 512px
+				$default_size = $context === 'image' ? 512 : 96;
+
+				$size = empty( $filters['num_words'] ) ? $default_size : $filters['num_words'];
+
+				// translators: %s = the author name
+				$alt = sprintf( esc_html__( 'Avatar image of %s', 'bricks' ), get_the_author_meta( 'display_name', $user->ID ) );
+
+				$value = $context === 'link' || $context === 'image' ? get_avatar_url( $user->ID, [ 'size' => $size ] ) : get_avatar( $user->ID, $size, '', $alt );
+				break;
+
+			case 'archive_url':
+				$value = get_author_posts_url( $user->ID );
+				break;
+
+			case 'bio':
+			case 'email':
+			case 'meta':
+			case 'website':
+				$key = $field_type;
+
+				// {author_bio} set key to description
+				if ( $field_type === 'bio' ) {
+					$key = 'description';
+				}
+
+				// {author_website} set key to url
+				if ( $field_type === 'website' ) {
+					$key = 'url';
+				}
+
+				if ( ! empty( $filters['meta_key'] ) ) {
+					$key = $filters['meta_key'];
+				}
+
+				$value = get_the_author_meta( $key, $user->ID );
+				break;
+		}
+
+		// NOTE: Undocumented
+		$value = apply_filters( 'bricks/dynamic_data/author_value', $value, $field_type, $filters );
 
 		return $value;
 	}
@@ -1211,10 +1343,14 @@ class Provider_Wp extends Base {
 			$object = get_queried_object();
 		}
 
-		// term_xx DD unable to parse correctly based on populate content (@since 1.9.5)
-		if ( Helpers::is_bricks_preview() && ! Query::is_looping() ) {
-			$object = Helpers::get_queried_object( $post_id );
-		}
+		/**
+		 * term_xx DD unable to parse correctly based on populate content (@since 1.9.5)
+		 * TODO NOTE: No longer in use (@since 1.9.6). As it causes builder query issue (#86bx6wxxm)
+		 * Should be tackled together with (#86bw6re4w)
+		 */
+		// if ( Helpers::is_bricks_preview() && ! Query::is_looping() ) {
+		// $object = Helpers::get_queried_object( $post_id );
+		// }
 
 		// Not a WP_Term, leave
 		if ( ! $object || ! is_a( $object, 'WP_Term' ) ) {

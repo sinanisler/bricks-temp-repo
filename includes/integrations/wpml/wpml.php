@@ -516,8 +516,6 @@ class Wpml {
 	 * @param string $title   The original title of the page.
 	 * @param int    $page_id The ID of the page.
 	 * @return string The modified title with the language suffix.
-	 *
-	 * @since 1.x
 	 */
 	public function add_langugage_to_post_title( $title, $page_id ) {
 		if ( isset( $_GET['addLanguageToPostTitle'] ) ) {

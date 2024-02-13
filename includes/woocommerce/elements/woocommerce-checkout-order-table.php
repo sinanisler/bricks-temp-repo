@@ -229,7 +229,7 @@ class Woocommerce_Checkout_Order_Table extends Element {
 		$order    = false;
 
 		// Populate the template with the last order
-		if ( bricks_is_builder() ) {
+		if ( Helpers::is_bricks_preview() ) {
 			$orders = wc_get_orders(
 				[
 					'limit' => 1,
@@ -269,7 +269,7 @@ class Woocommerce_Checkout_Order_Table extends Element {
 					</tr>
 				</thead>
 				<tbody>
-					<?php if ( is_array( $order ) && count( $order->get_items() ) > 0 ) { ?>
+					<?php if ( is_a( $order, 'WC_Order' ) && is_array( $order->get_items() ) && count( $order->get_items() ) > 0 ) { ?>
 						<?php foreach ( $order->get_items() as $item_id => $item ) { ?>
 							<?php
 							if ( ! apply_filters( 'woocommerce_order_item_visible', true, $item ) ) {

@@ -13,12 +13,16 @@ class Login extends Base {
 		$form_settings = $form->get_settings();
 		$form_fields   = $form->get_fields();
 
+		$user_login    = isset( $form_settings['loginName'] ) && isset( $form_fields[ "form-field-{$form_settings['loginName']}" ] ) ? $form_fields[ "form-field-{$form_settings['loginName']}" ] : false;
+		$user_password = isset( $form_settings['loginPassword'] ) && isset( $form_fields[ "form-field-{$form_settings['loginPassword']}" ] ) ? $form_fields[ "form-field-{$form_settings['loginPassword']}" ] : false;
+		$remember      = isset( $form_settings['loginRemember'] ) && isset( $form_fields[ "form-field-{$form_settings['loginRemember']}" ] );
+
 		// Login response: WP_User on success, WP_Error on failure
 		$login_response = wp_signon(
 			[
-				'user_login'    => $form_fields[ "form-field-{$form_settings['loginName']}" ] ?? false,
-				'user_password' => $form_fields[ "form-field-{$form_settings['loginPassword']}" ] ?? false,
-				'remember'      => isset( $form_fields[ "form-field-{$form_settings['loginRemember']}" ] ), // @since 1.9.2
+				'user_login'    => $user_login,
+				'user_password' => $user_password,
+				'remember'      => $remember,
 			]
 		);
 

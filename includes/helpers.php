@@ -586,8 +586,10 @@ class Helpers {
 	 * @since 1.0
 	 */
 	public static function posts_navigation( $current_page, $total_pages ) {
+		$posts_navigation_html = '<div class="bricks-pagination" role="navigation" aria-label="' . esc_attr__( 'Pagination', 'bricks' ) . '">';
+
 		if ( $total_pages < 2 ) {
-			return;
+			return $posts_navigation_html . '</div>';
 		}
 
 		$args = [
@@ -601,13 +603,13 @@ class Helpers {
 		// NOTE: Undocumented
 		$args = apply_filters( 'bricks/paginate_links_args', $args );
 
-		$posts_navigation_html = '<div class="bricks-pagination" role="navigation" aria-label="' . esc_attr__( 'Pagination', 'bricks' ) . '">';
-
 		$pagination_links = paginate_links( $args );
 
 		// Adding 'aria-label' attributes to previous & next links (@since 1.9)
-		$pagination_links = str_replace( '<a class="prev page-numbers"', '<a class="prev page-numbers" aria-label="' . esc_attr__( 'Previous page', 'bricks' ) . '"', $pagination_links );
-		$pagination_links = str_replace( '<a class="next page-numbers"', '<a class="next page-numbers" aria-label="' . esc_attr__( 'Next page', 'bricks' ) . '"', $pagination_links );
+		if ( $pagination_links ) {
+			$pagination_links = str_replace( '<a class="prev page-numbers"', '<a class="prev page-numbers" aria-label="' . esc_attr__( 'Previous page', 'bricks' ) . '"', $pagination_links );
+			$pagination_links = str_replace( '<a class="next page-numbers"', '<a class="next page-numbers" aria-label="' . esc_attr__( 'Next page', 'bricks' ) . '"', $pagination_links );
+		}
 
 		$posts_navigation_html .= $pagination_links;
 
@@ -2183,5 +2185,14 @@ class Helpers {
 		}
 
 		return $args;
+	}
+
+	/**
+	 * Check if Query Filters (= Bricks setting) are enabled
+	 *
+	 * @since 1.9.6
+	 */
+	public static function enabled_query_filters() {
+		return Database::get_setting( 'enableQueryFilters', false );
 	}
 }

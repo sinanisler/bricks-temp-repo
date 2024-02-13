@@ -305,6 +305,7 @@ class Builder {
 				'builderInsertElement'          => Database::get_setting( 'builderInsertElement', 'block' ),
 				'builderInsertLayout'           => Database::get_setting( 'builderInsertLayout', 'block' ),
 				'enableDynamicDataPreview'      => Database::get_setting( 'enableDynamicDataPreview', false ),
+				'enableQueryFilters'            => Database::get_setting( 'enableQueryFilters', false ),
 				'builderDynamicDropdownKey'     => Database::get_setting( 'builderDynamicDropdownKey', false ),
 				'builderDynamicDropdownNoLabel' => Database::get_setting( 'builderDynamicDropdownNoLabel', false ),
 				'builderDynamicDropdownExpand'  => Database::get_setting( 'builderDynamicDropdownExpand', false ),
@@ -390,6 +391,8 @@ class Builder {
 				'splideInstances'               => [], // Necessary to destroy and then reinit SplideJS instances
 				'tocbotInstances'               => [], // Necessary to destroy and then reinit Tocbot instances
 				'swiperInstances'               => [], // Necessary to destroy and then reinit SwiperJS instances
+				'isotopeInstances'              => [], // Necessary to destroy and then reinit Isotope instances
+				'filterInstances'               => [], // Necessary to destroy and then reinit query filter instances
 
 				'icons'                         => self::get_icon_font_classes(),
 
@@ -1267,6 +1270,11 @@ class Builder {
 			'linear'                           => esc_html__( 'Linear', 'bricks' ),
 			'linked'                           => esc_html__( 'Linked', 'bricks' ),
 			'list'                             => esc_html__( 'List', 'bricks' ),
+			'liveSearch'                       => esc_html__( 'Live search', 'bricks' ),
+			'liveSearchDescription'            => esc_html__( 'When enabled, this query only runs when a live search is performed.', 'bricks' ),
+			'liveSearchInfo'                   => esc_html__( 'Provide the element ID that holds the live search results below.', 'bricks' ),
+			'liveSearchWrapperSelector'        => esc_html__( 'Live search results', 'bricks' ),
+			'liveSearchWrapperSelectorDesc'    => esc_html__( 'Element ID that holds the live search results. Only visible when the live search is performed.', 'bricks' ),
 			'loadingTemplates'                 => esc_html__( 'Loading templates', 'bricks' ),
 			'loadMore'                         => esc_html__( 'Load more', 'bricks' ),
 			'lock'                             => esc_html__( 'Lock', 'bricks' ),

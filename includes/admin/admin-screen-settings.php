@@ -207,6 +207,29 @@ $export_global_settings_url = wp_nonce_url( admin_url( 'admin-ajax.php?action=br
 
 				<tr>
 					<th>
+						<label for="misc_group"><?php esc_html_e( 'Query filters', 'bricks' ); ?></label> <span class="badge"><?php esc_html_e( 'experimental', 'bricks' ); ?></span>
+					</th>
+					<td>
+						<div class="setting-wrapper">
+							<input type="checkbox" name="enableQueryFilters" id="enableQueryFilters" <?php checked( isset( $settings['enableQueryFilters'] ) ); ?>>
+							<label for="enableQueryFilters"><?php esc_html_e( 'Enable query sort / filter / live search' ); ?></label>
+							<p class="description"><?php echo esc_html__( 'Only queries of type "Post" are supported at this initial stage of development.', 'bricks' ) . ' ' . esc_html__( 'Avoid using in combination with third-party filter plugins.', 'bricks' ); ?></p>
+						</div>
+
+						<?php if ( isset( $settings['enableQueryFilters'] ) ) { ?>
+							<div class="setting-wrapper gap">
+								<button type="button" id="bricks-reindex-filters" class="ajax button button-secondary">
+									<span class="text"><?php esc_html_e( 'Regenerate filter index', 'bricks' ); ?></span>
+									<span class="spinner is-active"></span>
+									<i class="dashicons dashicons-yes hide"></i>
+								</button>
+							</div>
+						<?php } ?>
+					</td>
+				</tr>
+
+				<tr>
+					<th>
 						<label for="misc_group"><?php esc_html_e( 'Custom breakpoints', 'bricks' ); ?></label>
 						<p class="description">
 							<?php

@@ -472,7 +472,6 @@ class Element_Container extends Element {
 			'required' => [ '_display', '=', 'flex' ],
 		];
 
-		// @since 1.3.5
 		$this->controls['_flexGrow'] = [
 			'label'       => esc_html__( 'Flex grow', 'bricks' ),
 			'type'        => 'number',
@@ -791,7 +790,7 @@ class Element_Container extends Element {
 
 	public function render() {
 		$element  = $this->element;
-		$settings = ! empty( $element['settings'] ) ? $element['settings'] : [];
+		$settings = $element['settings'] ?? [];
 		$output   = '';
 
 		// Bricks Query Loop
@@ -891,6 +890,35 @@ class Element_Container extends Element {
 
 		if ( $parent_element && $parent_element['name'] === 'dropdown' && ! isset( $parent_element['settings']['megaMenu'] ) ) {
 			$this->tag = 'ul';
+		}
+
+		/**
+		 * Live search wrapper
+		 *
+		 * Add 'data-brx-ls-wrapper' to hide live search wrapper on page load.
+		 *
+		 * @since 1.9.6
+		 */
+		if ( count( Frontend::$live_search_wrapper_selectors ) ) {
+			foreach ( Frontend::$live_search_wrapper_selectors as $live_search_query_id => $live_search_wrapper_selector ) {
+				/**
+				 * 1. Last six-characters of live search results selector match element.id
+				 * 2. Live search results selector matches custom element ID
+				 */
+				$match_default_id = "#brxe-{$element['id']}" === $live_search_wrapper_selector;
+				$match_custom_id  = ! empty( $element['settings']['_cssId'] ) && "#{$element['settings']['_cssId']}" === $live_search_wrapper_selector;
+
+				if ( $match_default_id || $match_custom_id ) {
+					unset( Frontend::$live_search_wrapper_selectors[ $live_search_query_id ] );
+
+					$this->set_attribute( '_root', 'data-brx-ls-wrapper', $live_search_query_id );
+
+					// Ensure setting element 'id' to target the live search wrapper with CSS. Could be omittied, if the elment doesn't has_css_settings.
+					if ( empty( $this->attributes['_root']['id'] ) ) {
+						$this->set_attribute( '_root', 'id', $this->get_element_attribute_id() );
+					}
+				}
+			}
 		}
 
 		// Default: Non Query Loop
